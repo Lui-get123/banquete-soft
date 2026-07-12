@@ -1,0 +1,43 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "$2a$10$PRLFUB1qtVhxpm2TIIDXsO.LSnseJRIZCz8Nqo/H/7Zvk87Gso7cy",
+      "role": "admin",
+      "created_at": "2026-07-08T16:30:33.613Z"
+    }
+  ],
+  "asistentes": [
+    {
+      "nombre": "Luis Polo G",
+      "documento": "1002014081",
+      "telefono": "3022325564",
+      "email": "guillepologarcia@gmail.com",
+      "metodo_pago": "transferencia",
+      "monto": 60000,
+      "fecha_pago": "2026-07-10T20:08:26.905Z",
+      "qr_token": "BAN-1783714106905-3R032P",
+      "estado": "presente",
+      "id": 1,
+      "created_at": "2026-07-10T20:08:26.905Z",
+      "updated_at": "2026-07-10T20:12:40.180Z",
+      "hora_ingreso": "2026-07-10T20:12:40.180Z"
+    },
+    {
+      "nombre": "samuel Polo G",
+      "documento": "23333333333",
+      "telefono": "3026012",
+      "email": null,
+      "metodo_pago": "transferencia",
+      "monto": 60000,
+      "fecha_pago": "2026-07-10T20:10:05.890Z",
+      "qr_token": "BAN-1783714205890-Q7IGTC",
+      "estado": "presente",
+      "id": 2,
+      "created_at": "2026-07-10T20:10:05.890Z",
+      "updated_at": "2026-07-10T20:12:56.169Z",
+      "hora_ingreso": "2026-07-10T20:12:56.169Z"
+    }
+  ]
+}

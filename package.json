@@ -1,0 +1,74 @@
+{
+  "name": "banquete-access-system",
+  "version": "1.0.0",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "npm run build && electron-builder --publish=never"
+  },
+  "build": {
+    "appId": "com.banquete.access",
+    "productName": "Sistema de Acceso Banquete",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      ".next/**/*",
+      "electron/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.2",
+    "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
+    "html5-qrcode": "^2.3.8",
+    "jsonwebtoken": "^9.0.2",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
+    "lowdb": "^7.0.1",
+    "lucide-react": "^0.400.0",
+    "next": "14.2.5",
+    "nodemailer": "^9.0.3",
+    "qrcode": "^1.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.4.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.14.11",
+    "@types/nodemailer": "^8.0.1",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "concurrently": "^10.0.3",
+    "electron": "^43.1.0",
+    "electron-builder": "^26.15.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^3.4.6",
+    "typescript": "^5.5.3",
+    "wait-on": "^9.0.10"
+  }
+}
