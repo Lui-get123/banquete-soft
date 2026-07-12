@@ -104,7 +104,7 @@ export default function EscanerPage() {
   const handleScan = async (qrToken: string) => {
     setScanning(false);
     try {
-      const response = await fetch(`/api/asistentes/qr/${qrToken}`, {
+      const response = await fetch(`/api/asistentes/qr/${qrToken}?t=${Date.now()}`, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
