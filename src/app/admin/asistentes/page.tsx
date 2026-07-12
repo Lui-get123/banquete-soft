@@ -174,7 +174,7 @@ export default function AsistentesPage() {
     const doc = new jsPDF();
 
     // Colores de la marca
-    const brandColor = [91, 35, 51]; // #5B2333
+    const brandColor: [number, number, number] = [91, 35, 51]; // #5B2333
 
     // Título Principal
     doc.setFontSize(22);
@@ -241,7 +241,7 @@ export default function AsistentesPage() {
         cellPadding: 4,
       },
       alternateRowStyles: {
-        fillColor: [253, 251, 247] // Un tono crema muy claro #FDFBF7
+        fillColor: [253, 251, 247] as [number, number, number] // Un tono crema muy claro #FDFBF7
       },
       columnStyles: {
         4: { halign: 'right' }, // Monto alineado a la derecha
