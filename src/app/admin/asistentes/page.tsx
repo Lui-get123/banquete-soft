@@ -96,52 +96,161 @@ export default function AsistentesPage() {
     }
   };
 
-  const handleExportExcel = () => {
-    const XLSX = require('xlsx');
-    const worksheet = XLSX.utils.json_to_sheet(
-      filteredAsistentes.map(a => ({
-        Nombre: a.nombre,
-        Documento: a.documento,
-        Teléfono: a.telefono,
-        Email: a.email || '',
-        'Método de Pago': a.metodo_pago,
-        Monto: a.monto,
-        'Fecha de Pago': formatDate(a.fecha_pago),
-        Estado: a.estado === 'presente' ? 'Presente' : 'No Presente',
-        'Hora de Ingreso': a.hora_ingreso ? formatDate(a.hora_ingreso) : '',
-      }))
-    );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Asistentes');
-    XLSX.writeFile(workbook, 'asistentes.xlsx');
+  const handleExportExcel = async () => {
+    const ExcelJS = (await import('exceljs')).default;
+    const { saveAs } = await import('file-saver');
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Asistentes');
+
+    // Headers
+    worksheet.columns = [
+      { header: 'Nombre', key: 'nombre', width: 30 },
+      { header: 'Documento', key: 'documento', width: 15 },
+      { header: 'Teléfono', key: 'telefono', width: 15 },
+      { header: 'Email', key: 'email', width: 25 },
+      { header: 'Método de Pago', key: 'metodo_pago', width: 20 },
+      { header: 'Monto', key: 'monto', width: 15 },
+      { header: 'Estado', key: 'estado', width: 15 },
+      { header: 'Fecha de Pago', key: 'fecha_pago', width: 20 },
+      { header: 'Hora de Ingreso', key: 'hora_ingreso', width: 20 },
+    ];
+
+    // Estilo de la cabecera
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF5B2333' } // Vinotinto
+      };
+      cell.font = {
+        color: { argb: 'FFFFFFFF' },
+        bold: true,
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: {style:'thin'},
+        left: {style:'thin'},
+        bottom: {style:'thin'},
+        right: {style:'thin'}
+      };
+    });
+    headerRow.height = 30;
+
+    // Agregar filas
+    filteredAsistentes.forEach(a => {
+      worksheet.addRow({
+        nombre: a.nombre,
+        documento: a.documento,
+        telefono: a.telefono,
+        email: a.email || '',
+        metodo_pago: a.metodo_pago.charAt(0).toUpperCase() + a.metodo_pago.slice(1),
+        monto: a.monto,
+        estado: a.estado === 'presente' ? 'Presente' : 'No Presente',
+        fecha_pago: formatDate(a.fecha_pago),
+        hora_ingreso: a.hora_ingreso ? formatDate(a.hora_ingreso) : '',
+      });
+    });
+
+    // Dar formato de moneda a la columna de monto
+    worksheet.getColumn('monto').numFmt = '"$"#,##0.00;[Red]\\-"$"#,##0.00';
+    
+    // Auto-filtro
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: filteredAsistentes.length + 1, column: 9 }
+    };
+
+    // Guardar
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'BanqueteSoft_Asistentes.xlsx');
   };
 
   const handleExportPDF = () => {
-    const jsPDF = require('jspdf');
+    const jsPDF = require('jspdf').jsPDF;
     const autoTable = require('jspdf-autotable');
     const doc = new jsPDF();
 
-    doc.setFontSize(18);
-    doc.text('Reporte de Asistentes', 14, 22);
-    doc.setFontSize(11);
-    doc.text(`Total: ${stats.total} | Presentes: ${stats.presentes} | Recaudado: ${formatCurrency(stats.recaudado)}`, 14, 30);
+    // Colores de la marca
+    const brandColor = [91, 35, 51]; // #5B2333
 
+    // Título Principal
+    doc.setFontSize(22);
+    doc.setTextColor(brandColor[0], brandColor[1], brandColor[2]);
+    doc.text('Reporte Oficial de Asistentes', 14, 20);
+    
+    // Subtítulo / Fecha
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generado el: ${new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 14, 28);
+
+    // Caja de Resumen
+    doc.setDrawColor(230, 230, 230);
+    doc.setFillColor(245, 240, 232); // #F5F0E8
+    doc.roundedRect(14, 32, 182, 22, 3, 3, 'FD');
+
+    doc.setFontSize(11);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont('helvetica', 'bold');
+    
+    doc.text(`Total Registrados:`, 18, 40);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${stats.total}`, 55, 40);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Recaudado:`, 80, 40);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${formatCurrency(stats.recaudado)}`, 105, 40);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Presentes:`, 145, 40);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${stats.presentes}`, 168, 40);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Ausentes:`, 18, 48);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${stats.ausentes}`, 40, 48);
+
+    // Preparar Datos para la Tabla
     const tableData = filteredAsistentes.map(a => [
       a.nombre,
       a.documento,
       a.telefono,
-      a.metodo_pago,
+      a.metodo_pago.charAt(0).toUpperCase() + a.metodo_pago.slice(1),
       formatCurrency(a.monto),
       a.estado === 'presente' ? 'Presente' : 'No Presente',
     ]);
 
+    // Tabla Estilizada
     autoTable(doc, {
       head: [['Nombre', 'Documento', 'Teléfono', 'Método', 'Monto', 'Estado']],
       body: tableData,
-      startY: 40,
+      startY: 62,
+      theme: 'striped',
+      headStyles: {
+        fillColor: brandColor,
+        textColor: 255,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 4,
+      },
+      alternateRowStyles: {
+        fillColor: [253, 251, 247] // Un tono crema muy claro #FDFBF7
+      },
+      columnStyles: {
+        4: { halign: 'right' }, // Monto alineado a la derecha
+        5: { halign: 'center' } // Estado alineado al centro
+      }
     });
 
-    doc.save('asistentes.pdf');
+    // Guardar Documento
+    doc.save('BanqueteSoft_Reporte_Asistentes.pdf');
   };
 
   const paymentTotal = stats.transferencia + stats.efectivo;
