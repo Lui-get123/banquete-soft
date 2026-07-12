@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import ExcelJS from 'exceljs';
 
 export default function AsistentesPage() {
   const router = useRouter();
@@ -97,8 +101,6 @@ export default function AsistentesPage() {
   };
 
   const handleExportExcel = async () => {
-    const ExcelJS = (await import('exceljs')).default;
-    const { saveAs } = await import('file-saver');
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Asistentes');
@@ -169,8 +171,6 @@ export default function AsistentesPage() {
   };
 
   const handleExportPDF = () => {
-    const jsPDF = require('jspdf').jsPDF;
-    const autoTable = require('jspdf-autotable');
     const doc = new jsPDF();
 
     // Colores de la marca
