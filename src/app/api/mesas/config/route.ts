@@ -34,9 +34,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { mesas, sillasPorMesa } = body;
 
-    if (!mesas || !sillasPorMesa) {
+    if (!body || !body.mesas) {
       return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
     }
 
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
       .from('configuracion')
       .upsert({
         id: 'layout',
-        valor: { mesas, sillasPorMesa }
+        valor: body
       });
 
     if (error) throw error;

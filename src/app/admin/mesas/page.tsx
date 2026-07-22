@@ -12,9 +12,13 @@ interface Asistente {
   silla: number | null;
 }
 
+interface MesaConfig {
+  id: number;
+  sillas: number;
+}
+
 interface Config {
-  mesas: number;
-  sillasPorMesa: number;
+  mesas: MesaConfig[];
 }
 
 export default function MesasPage() {
@@ -40,14 +44,22 @@ export default function MesasPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch Config
       const resConfig = await fetch('/api/mesas/config');
       if (resConfig.ok) {
-        const configData = await resConfig.json();
-        setConfig(configData);
+        let configData = await resConfig.json();
+        if (configData) {
+          // Migrar formato antiguo { mesas: 10, sillasPorMesa: 8 } a nuevo formato array si es necesario
+          if (typeof configData.mesas === 'number') {
+            const legacyMesas = Array.from({ length: configData.mesas }).map((_, i) => ({
+              id: i + 1,
+              sillas: configData.sillasPorMesa
+            }));
+            configData = { mesas: legacyMesas };
+          }
+          setConfig(configData);
+        }
       }
       
-      // Fetch Asistentes
       const resAsistentes = await fetch('/api/asistentes');
       if (resAsistentes.ok) {
         const asisData = await resAsistentes.json();
@@ -60,23 +72,109 @@ export default function MesasPage() {
     }
   };
 
-  const handleSaveConfig = async (e: React.FormEvent) => {
+  const saveConfig = async (newConfig: Config) => {
+    const res = await fetch('/api/mesas/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newConfig)
+    });
+    if (!res.ok) throw new Error('Error saving config');
+    setConfig(newConfig);
+  };
+
+  const handleCreateInitialLayout = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingConfig(true);
     try {
-      const res = await fetch('/api/mesas/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mesas: inputMesas, sillasPorMesa: inputSillas })
-      });
-      
-      if (!res.ok) throw new Error('Error saving config');
-      setConfig({ mesas: inputMesas, sillasPorMesa: inputSillas });
+      const initialMesas = Array.from({ length: inputMesas }).map((_, i) => ({
+        id: i + 1,
+        sillas: inputSillas
+      }));
+      await saveConfig({ mesas: initialMesas });
     } catch (error) {
       console.error(error);
       alert('Hubo un error al guardar la configuración.');
     } finally {
       setSavingConfig(false);
+    }
+  };
+
+  const handleAddMesa = async () => {
+    if (!config) return;
+    try {
+      const newId = config.mesas.length > 0 ? Math.max(...config.mesas.map(m => m.id)) + 1 : 1;
+      const newMesa = { id: newId, sillas: 8 }; // Por defecto 8 sillas
+      await saveConfig({ mesas: [...config.mesas, newMesa] });
+    } catch (error) {
+      alert('Error al añadir mesa');
+    }
+  };
+
+  const handleDeleteMesa = async (mesaId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar abrir el modal
+    if (!config) return;
+    if (!confirm(`¿Estás seguro de eliminar la Mesa ${mesaId}? Cualquier persona sentada será desasignada.`)) return;
+    
+    try {
+      // 1. Desasignar en backend
+      await fetch('/api/mesas/modificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unassignList: [{ mesa: mesaId }] })
+      });
+
+      // 2. Desasignar localmente
+      setAsistentes(prev => prev.map(a => a.mesa === mesaId ? { ...a, mesa: null, silla: null } : a));
+
+      // 3. Quitar de la configuración
+      await saveConfig({ mesas: config.mesas.filter(m => m.id !== mesaId) });
+    } catch (error) {
+      alert('Error al eliminar la mesa');
+    }
+  };
+
+  const handleAddSilla = async () => {
+    if (!config || selectedMesa === null) return;
+    try {
+      const mesaIdx = config.mesas.findIndex(m => m.id === selectedMesa);
+      const newConfig = { mesas: [...config.mesas] };
+      newConfig.mesas[mesaIdx].sillas += 1;
+      await saveConfig(newConfig);
+    } catch (error) {
+      alert('Error al añadir silla');
+    }
+  };
+
+  const handleRemoveSilla = async () => {
+    if (!config || selectedMesa === null) return;
+    const mesaIdx = config.mesas.findIndex(m => m.id === selectedMesa);
+    const currentSillas = config.mesas[mesaIdx].sillas;
+    
+    if (currentSillas <= 1) {
+      return alert('La mesa debe tener al menos 1 silla. Si no, elimina la mesa completa.');
+    }
+    
+    if (!confirm(`¿Seguro que deseas quitar la silla #${currentSillas}? Si hay alguien sentado ahí, perderá el puesto.`)) return;
+
+    try {
+      // 1. Desasignar en backend
+      await fetch('/api/mesas/modificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unassignList: [{ mesa: selectedMesa, silla: currentSillas }] })
+      });
+
+      // 2. Desasignar localmente
+      setAsistentes(prev => prev.map(a => 
+        (a.mesa === selectedMesa && a.silla === currentSillas) ? { ...a, mesa: null, silla: null } : a
+      ));
+
+      // 3. Quitar de la configuración
+      const newConfig = { mesas: [...config.mesas] };
+      newConfig.mesas[mesaIdx].sillas -= 1;
+      await saveConfig(newConfig);
+    } catch (error) {
+      alert('Error al quitar silla');
     }
   };
 
@@ -93,7 +191,6 @@ export default function MesasPage() {
         throw new Error(err.error || 'Error asignando');
       }
 
-      // Optimistic update
       setAsistentes(prev => prev.map(a => 
         a.id === asistente_id ? { ...a, mesa, silla } : a
       ));
@@ -115,7 +212,6 @@ export default function MesasPage() {
 
       if (!res.ok) throw new Error('Error desasignando');
 
-      // Optimistic update
       setAsistentes(prev => prev.map(a => 
         a.id === asistente_id ? { ...a, mesa: null, silla: null } : a
       ));
@@ -124,7 +220,6 @@ export default function MesasPage() {
     }
   };
 
-  // List of available attendees (Present and not assigned)
   const availableAttendees = useMemo(() => {
     return asistentes.filter(a => 
       a.estado === 'presente' && a.mesa === null &&
@@ -140,15 +235,18 @@ export default function MesasPage() {
     );
   }
 
+  // Cálculos estadísticos globales
+  const totalSillas = config?.mesas.reduce((acc, m) => acc + m.sillas, 0) || 0;
+  const asientosOcupados = asistentes.filter(a => a.mesa !== null).length;
+
   return (
     <div className="min-h-screen bg-warm-50 pb-12">
-      {/* Nav */}
       <nav className="nav-bar">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <button
-                onClick={() => router.push('/admin')}
+                onClick={() => router.push('/dashboard')}
                 className="text-warm-600 hover:text-primary-600 font-medium transition-colors"
               >
                 ← Volver al Panel
@@ -163,12 +261,11 @@ export default function MesasPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!config ? (
-          /* ─── SETUP FORM ─── */
           <div className="max-w-md mx-auto card animate-fadeInUp">
             <h2 className="text-2xl font-display font-bold text-warm-900 mb-6 text-center">Configurar Salón</h2>
-            <form onSubmit={handleSaveConfig} className="space-y-6">
+            <form onSubmit={handleCreateInitialLayout} className="space-y-6">
               <div>
-                <label className="label-field">Número total de Mesas</label>
+                <label className="label-field">Número inicial de Mesas</label>
                 <input
                   type="number"
                   min="1"
@@ -180,7 +277,7 @@ export default function MesasPage() {
                 />
               </div>
               <div>
-                <label className="label-field">Número de Sillas por Mesa</label>
+                <label className="label-field">Número inicial de Sillas por Mesa</label>
                 <input
                   type="number"
                   min="1"
@@ -197,62 +294,77 @@ export default function MesasPage() {
             </form>
           </div>
         ) : (
-          /* ─── SALON VIEW ─── */
           <div>
-            <div className="flex justify-between items-end mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-8 gap-4">
               <div>
                 <h2 className="text-3xl font-display font-bold text-warm-900">Plano del Salón</h2>
-                <p className="text-warm-500 mt-2">Selecciona una mesa para asignar asistentes a sus sillas.</p>
+                <p className="text-warm-500 mt-2">Selecciona una mesa para gestionar sillas e invitados.</p>
               </div>
-              <div className="text-right">
+              <div className="flex items-center gap-4 flex-wrap">
                 <span className="stat-badge bg-primary-100 text-primary-700 text-lg py-2 px-4">
-                  {asistentes.filter(a => a.mesa !== null).length} / {config.mesas * config.sillasPorMesa} Asientos Ocupados
+                  {asientosOcupados} / {totalSillas} Asientos Ocupados
                 </span>
+                <button 
+                  onClick={handleAddMesa}
+                  className="btn-success flex items-center gap-2 shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                  Añadir Mesa
+                </button>
               </div>
             </div>
 
-            {/* Grid de Mesas */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8">
-              {Array.from({ length: config.mesas }).map((_, mesaIndex) => {
-                const mesaNumero = mesaIndex + 1;
+              {config.mesas.map((mesaConfig) => {
+                const mesaNumero = mesaConfig.id;
+                const totalSillasMesa = mesaConfig.sillas;
                 const ocupantes = asistentes.filter(a => a.mesa === mesaNumero);
-                const isFull = ocupantes.length === config.sillasPorMesa;
+                const isFull = ocupantes.length === totalSillasMesa && totalSillasMesa > 0;
                 const isEmpty = ocupantes.length === 0;
 
                 return (
-                  <button
-                    key={mesaNumero}
-                    onClick={() => setSelectedMesa(mesaNumero)}
-                    className={`relative aspect-square rounded-full flex flex-col items-center justify-center transition-all duration-300 transform hover:scale-105 shadow-md border-4 
-                      ${isFull 
-                        ? 'bg-primary-50 border-primary-500' 
-                        : isEmpty 
-                          ? 'bg-white border-warm-200' 
-                          : 'bg-accent-50 border-accent-400'}`}
-                  >
-                    <span className="text-2xl font-display font-bold text-warm-900">Mesa {mesaNumero}</span>
-                    <span className={`text-sm font-medium mt-1 ${isFull ? 'text-primary-600' : 'text-warm-500'}`}>
-                      {ocupantes.length} / {config.sillasPorMesa}
-                    </span>
+                  <div key={mesaNumero} className="relative group">
+                    <button
+                      onClick={() => setSelectedMesa(mesaNumero)}
+                      className={`relative aspect-square w-full rounded-full flex flex-col items-center justify-center transition-all duration-300 transform group-hover:scale-105 shadow-md border-4 
+                        ${isFull 
+                          ? 'bg-primary-50 border-primary-500' 
+                          : isEmpty 
+                            ? 'bg-white border-warm-200' 
+                            : 'bg-accent-50 border-accent-400'}`}
+                    >
+                      <span className="text-2xl font-display font-bold text-warm-900">Mesa {mesaNumero}</span>
+                      <span className={`text-sm font-medium mt-1 ${isFull ? 'text-primary-600' : 'text-warm-500'}`}>
+                        {ocupantes.length} / {totalSillasMesa}
+                      </span>
+                      
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        {Array.from({ length: totalSillasMesa }).map((__, i) => {
+                          const angle = (i * 360) / totalSillasMesa;
+                          const radius = 60;
+                          const sillaOcupada = ocupantes.some(o => o.silla === (i + 1));
+                          return (
+                            <div 
+                              key={i}
+                              className={`absolute w-3 h-3 rounded-full ${sillaOcupada ? 'bg-primary-500' : 'bg-warm-200'}`}
+                              style={{
+                                transform: `rotate(${angle}deg) translateY(-${radius}px)`
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </button>
                     
-                    {/* Visual indicators for chairs */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      {Array.from({ length: config.sillasPorMesa }).map((__, i) => {
-                        const angle = (i * 360) / config.sillasPorMesa;
-                        const radius = 60; // distance from center
-                        const sillaOcupada = ocupantes.some(o => o.silla === (i + 1));
-                        return (
-                          <div 
-                            key={i}
-                            className={`absolute w-3 h-3 rounded-full ${sillaOcupada ? 'bg-primary-500' : 'bg-warm-200'}`}
-                            style={{
-                              transform: `rotate(${angle}deg) translateY(-${radius}px)`
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </button>
+                    {/* Botón Flotante Eliminar Mesa */}
+                    <button
+                      onClick={(e) => handleDeleteMesa(mesaNumero, e)}
+                      className="absolute -top-2 -right-2 w-8 h-8 bg-white border border-danger-200 text-danger-500 rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 hover:bg-danger-50 hover:scale-110 transition-all z-10"
+                      title="Eliminar Mesa"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -263,108 +375,130 @@ export default function MesasPage() {
       {/* ─── MESA DETALLE MODAL ─── */}
       {selectedMesa && config && (
         <div className="fixed inset-0 bg-warm-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-fadeInUp">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl animate-fadeInUp">
             
-            {/* Modal Header */}
-            <div className="p-6 border-b border-warm-100 flex justify-between items-center bg-warm-50">
+            <div className="p-6 border-b border-warm-100 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-warm-50 gap-4 rounded-t-3xl">
               <h3 className="text-2xl font-display font-bold text-warm-900">
                 Gestión - Mesa {selectedMesa}
               </h3>
-              <button 
-                onClick={() => { setSelectedMesa(null); setAssigningSilla(null); }}
-                className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-warm-500 hover:text-warm-900 shadow-sm transition-colors"
-              >
-                ✕
-              </button>
+              
+              <div className="flex items-center gap-3 flex-wrap">
+                <button 
+                  onClick={handleAddSilla}
+                  className="bg-white border border-warm-200 text-warm-700 px-3 py-1.5 rounded-lg hover:bg-warm-100 transition-colors text-sm font-medium flex items-center gap-1 shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                  Añadir Silla
+                </button>
+                <button 
+                  onClick={handleRemoveSilla}
+                  className="bg-white border border-danger-200 text-danger-600 px-3 py-1.5 rounded-lg hover:bg-danger-50 transition-colors text-sm font-medium flex items-center gap-1 shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4"/></svg>
+                  Quitar Silla
+                </button>
+                <button 
+                  onClick={() => { setSelectedMesa(null); setAssigningSilla(null); }}
+                  className="w-10 h-10 ml-2 rounded-full bg-white flex items-center justify-center text-warm-500 hover:text-warm-900 shadow-sm border border-warm-200 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto flex-1 bg-white">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {Array.from({ length: config.sillasPorMesa }).map((_, sillaIndex) => {
-                  const sillaNumero = sillaIndex + 1;
-                  const ocupante = asistentes.find(a => a.mesa === selectedMesa && a.silla === sillaNumero);
-                  const isAssigningThis = assigningSilla === sillaNumero;
+            <div className="p-6 overflow-y-auto flex-1 bg-white rounded-b-3xl">
+              {(() => {
+                const mesaConfig = config.mesas.find(m => m.id === selectedMesa);
+                if (!mesaConfig) return null;
 
-                  return (
-                    <div key={sillaNumero} className={`p-4 rounded-2xl border transition-all ${
-                      ocupante ? 'bg-primary-50 border-primary-200' : 'bg-warm-50 border-warm-200 border-dashed'
-                    }`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-medium text-warm-500 text-sm">Silla {sillaNumero}</span>
-                        {ocupante && (
-                          <span className="stat-badge bg-primary-100 text-primary-700 text-xs py-1">Ocupada</span>
-                        )}
-                      </div>
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {Array.from({ length: mesaConfig.sillas }).map((_, sillaIndex) => {
+                      const sillaNumero = sillaIndex + 1;
+                      const ocupante = asistentes.find(a => a.mesa === selectedMesa && a.silla === sillaNumero);
+                      const isAssigningThis = assigningSilla === sillaNumero;
 
-                      {ocupante ? (
-                        <div className="flex justify-between items-center mt-2">
-                          <div>
-                            <p className="font-bold text-warm-900">{ocupante.nombre}</p>
-                            <p className="text-xs text-warm-500">{ocupante.documento}</p>
+                      return (
+                        <div key={sillaNumero} className={`p-4 rounded-2xl border transition-all ${
+                          ocupante ? 'bg-primary-50 border-primary-200 shadow-sm' : 'bg-warm-50 border-warm-200 border-dashed'
+                        }`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-medium text-warm-500 text-sm">Silla {sillaNumero}</span>
+                            {ocupante && (
+                              <span className="stat-badge bg-primary-100 text-primary-700 text-xs py-1">Ocupada</span>
+                            )}
                           </div>
-                          <button 
-                            onClick={() => handleUnassign(ocupante.id)}
-                            className="text-danger-500 hover:text-danger-700 hover:bg-danger-50 p-2 rounded-lg transition-colors text-sm font-medium"
-                          >
-                            Quitar
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="mt-2">
-                          {!isAssigningThis ? (
-                            <button 
-                              onClick={() => setAssigningSilla(sillaNumero)}
-                              className="w-full py-3 rounded-xl border border-warm-200 bg-white text-warm-600 hover:border-primary-300 hover:text-primary-600 transition-colors font-medium flex items-center justify-center gap-2"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
-                              Asignar Asistente
-                            </button>
+
+                          {ocupante ? (
+                            <div className="flex justify-between items-center mt-2">
+                              <div>
+                                <p className="font-bold text-warm-900">{ocupante.nombre}</p>
+                                <p className="text-xs text-warm-500">{ocupante.documento}</p>
+                              </div>
+                              <button 
+                                onClick={() => handleUnassign(ocupante.id)}
+                                className="text-danger-500 hover:text-danger-700 hover:bg-danger-50 p-2 rounded-lg transition-colors text-sm font-medium"
+                              >
+                                Levantar
+                              </button>
+                            </div>
                           ) : (
-                            <div className="animate-fadeIn">
-                              <div className="flex items-center gap-2 mb-3">
-                                <input
-                                  type="text"
-                                  placeholder="Buscar nombre o cédula..."
-                                  value={searchTerm}
-                                  onChange={e => setSearchTerm(e.target.value)}
-                                  className="input-field text-sm py-2"
-                                  autoFocus
-                                />
+                            <div className="mt-2">
+                              {!isAssigningThis ? (
                                 <button 
-                                  onClick={() => setAssigningSilla(null)}
-                                  className="text-warm-400 hover:text-warm-600"
+                                  onClick={() => setAssigningSilla(sillaNumero)}
+                                  className="w-full py-3 rounded-xl border border-warm-200 bg-white text-warm-600 hover:border-primary-300 hover:text-primary-600 transition-colors font-medium flex items-center justify-center gap-2 shadow-sm"
                                 >
-                                  ✕
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                                  Asignar Asistente
                                 </button>
-                              </div>
-                              <div className="max-h-48 overflow-y-auto rounded-xl border border-warm-200 bg-white">
-                                {availableAttendees.length === 0 ? (
-                                  <p className="p-4 text-center text-sm text-warm-500">No hay asistentes presentes sin mesa.</p>
-                                ) : (
-                                  availableAttendees.map(a => (
-                                    <button
-                                      key={a.id}
-                                      onClick={() => handleAssign(a.id, selectedMesa, sillaNumero)}
-                                      className="w-full text-left p-3 hover:bg-warm-50 border-b border-warm-100 last:border-0 transition-colors flex justify-between items-center"
+                              ) : (
+                                <div className="animate-fadeIn">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <input
+                                      type="text"
+                                      placeholder="Buscar nombre o cédula..."
+                                      value={searchTerm}
+                                      onChange={e => setSearchTerm(e.target.value)}
+                                      className="input-field text-sm py-2"
+                                      autoFocus
+                                    />
+                                    <button 
+                                      onClick={() => setAssigningSilla(null)}
+                                      className="text-warm-400 hover:text-warm-600"
                                     >
-                                      <div>
-                                        <p className="font-medium text-warm-900 text-sm">{a.nombre}</p>
-                                        <p className="text-xs text-warm-500">{a.documento}</p>
-                                      </div>
-                                      <span className="text-primary-600 text-xs font-medium bg-primary-50 px-2 py-1 rounded-md">Seleccionar</span>
+                                      ✕
                                     </button>
-                                  ))
-                                )}
-                              </div>
+                                  </div>
+                                  <div className="max-h-48 overflow-y-auto rounded-xl border border-warm-200 bg-white shadow-inner">
+                                    {availableAttendees.length === 0 ? (
+                                      <p className="p-4 text-center text-sm text-warm-500">No hay asistentes presentes sin mesa.</p>
+                                    ) : (
+                                      availableAttendees.map(a => (
+                                        <button
+                                          key={a.id}
+                                          onClick={() => handleAssign(a.id, selectedMesa, sillaNumero)}
+                                          className="w-full text-left p-3 hover:bg-warm-50 border-b border-warm-100 last:border-0 transition-colors flex justify-between items-center"
+                                        >
+                                          <div>
+                                            <p className="font-medium text-warm-900 text-sm">{a.nombre}</p>
+                                            <p className="text-xs text-warm-500">{a.documento}</p>
+                                          </div>
+                                          <span className="text-primary-600 text-xs font-medium bg-primary-50 px-2 py-1 rounded-md">Sentar aquí</span>
+                                        </button>
+                                      ))
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
