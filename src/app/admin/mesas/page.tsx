@@ -482,7 +482,7 @@ export default function MesasPage() {
                 </h3>
                 <input
                   type="text"
-                  placeholder="Ej: Familia Polo (Opcional)"
+                  placeholder="Etiquetar Mesa"
                   className="input-field text-sm bg-white"
                   value={config.mesas.find(m => m.id === selectedMesa)?.etiqueta || ''}
                   onChange={(e) => handleUpdateMesaEtiqueta(selectedMesa, e.target.value)}
