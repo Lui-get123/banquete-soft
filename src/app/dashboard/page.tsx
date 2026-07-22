@@ -68,7 +68,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Dashboard Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Registrar Pago */}
           <Link
             href="/registro"
@@ -197,6 +197,40 @@ export default function DashboardPage() {
                   strokeWidth={2}
                   d="M9 5l7 7-7 7"
                 />
+              </svg>
+            </div>
+          </Link>
+
+          {/* Asignación de Mesas */}
+          <Link
+            href="/admin/mesas"
+            className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-3"
+          >
+            <div className="flex items-center justify-center w-14 h-14 bg-success-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
+              <svg
+                className="w-7 h-7 text-success-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-warm-900 mb-1">
+              Asignación de Mesas
+            </h3>
+            <p className="text-warm-500 text-sm leading-relaxed">
+              Diseñar salón y asignar sillas a invitados
+            </p>
+            <div className="mt-4 flex items-center text-success-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span>Ir a mesas</span>
+              <svg
+                className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>
           </Link>
