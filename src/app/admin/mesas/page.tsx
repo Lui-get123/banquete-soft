@@ -220,6 +220,20 @@ export default function MesasPage() {
     }
   };
 
+  const handleResetSalon = async () => {
+    if (!confirm('⚠️ ZONA DE RIESGO ⚠️\n\n¿Estás completamente seguro de que quieres eliminar TODAS las mesas y sillas? Esto levantará a todas las personas de sus asientos y el salón quedará vacío.')) return;
+
+    try {
+      const res = await fetch('/api/mesas/reset', { method: 'POST' });
+      if (!res.ok) throw new Error('Error al reiniciar');
+      
+      setConfig(null);
+      setAsistentes(prev => prev.map(a => ({ ...a, mesa: null, silla: null })));
+    } catch (error) {
+      alert('Hubo un error al eliminar todo el salón.');
+    }
+  };
+
   const availableAttendees = useMemo(() => {
     return asistentes.filter(a => 
       a.estado === 'presente' && a.mesa === null &&
@@ -310,6 +324,14 @@ export default function MesasPage() {
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                   Añadir Mesa
+                </button>
+                <button 
+                  onClick={handleResetSalon}
+                  className="bg-danger-100 text-danger-700 hover:bg-danger-600 hover:text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md transition-all border border-danger-200"
+                  title="Eliminar Todo el Salón"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  Zona de Riesgo
                 </button>
               </div>
             </div>
