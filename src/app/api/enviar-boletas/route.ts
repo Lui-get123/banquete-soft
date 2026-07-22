@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { withAuth } from '@/lib/api-auth';
 
-export async function POST(request: NextRequest) {
+export const dynamic = 'force-dynamic';
+
+async function postEnviarBoletas(request: NextRequest) {
   try {
-    const { email, boletasBase64 } = await request.json();
+    const { email, boletasBase64, customMessage } = await request.json();
 
     if (!email || !boletasBase64 || !Array.isArray(boletasBase64) || boletasBase64.length === 0) {
       return NextResponse.json(
@@ -43,12 +46,12 @@ export async function POST(request: NextRequest) {
       from: `"Banquete Soft" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: '¡Tus Boletas para el Evento!',
-      text: 'Adjuntamos las boletas que has generado. Por favor, preséntalas en la entrada del evento.',
+      text: customMessage || 'Adjuntamos las boletas que has generado. Por favor, preséntalas en la entrada del evento.',
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #4A4036; background-color: #FDFBF7; padding: 20px; border-radius: 12px; border: 1px solid #EBE4D8;">
           <h1 style="color: #5B2333; text-align: center; border-bottom: 2px solid #EBE4D8; padding-bottom: 10px;">¡Tus Boletas están Listas!</h1>
           <p style="font-size: 16px;">Hola,</p>
-          <p style="font-size: 16px;">Gracias por tu registro. Adjunto a este correo encontrarás <strong>${attachments.length} boleta(s)</strong> para el evento.</p>
+          <p style="font-size: 16px;">${customMessage || 'Gracias por tu registro. Adjunto a este correo encontrarás tus boletas para el evento.'}</p>
           <p style="font-size: 16px; background-color: #F5F0E8; padding: 15px; border-radius: 8px;">Por favor, descarga las imágenes adjuntas o muestra este correo directamente en la entrada. Cada boleta contiene un código QR único que será escaneado.</p>
           <br/>
           <p style="font-size: 16px; text-align: center; color: #8C7B68;">¡Nos vemos pronto!</p>
@@ -68,3 +71,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withAuth(postEnviarBoletas);

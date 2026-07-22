@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Utensils, CheckCircle } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
 interface Asistente {
   id: number;
@@ -46,7 +47,7 @@ export default function MesasPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const resConfig = await fetch('/api/mesas/config');
+      const resConfig = await apiFetch('/api/mesas/config');
       if (resConfig.ok) {
         let configData = await resConfig.json();
         if (configData) {
@@ -62,7 +63,7 @@ export default function MesasPage() {
         }
       }
       
-      const resAsistentes = await fetch('/api/asistentes');
+      const resAsistentes = await apiFetch('/api/asistentes');
       if (resAsistentes.ok) {
         const asisData = await resAsistentes.json();
         setAsistentes(asisData);
@@ -75,7 +76,7 @@ export default function MesasPage() {
   };
 
   const saveConfig = async (newConfig: Config) => {
-    const res = await fetch('/api/mesas/config', {
+    const res = await apiFetch('/api/mesas/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newConfig)
@@ -119,7 +120,7 @@ export default function MesasPage() {
     
     try {
       // 1. Desasignar en backend
-      await fetch('/api/mesas/modificar', {
+      await apiFetch('/api/mesas/modificar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ unassignList: [{ mesa: mesaId }] })
@@ -160,7 +161,7 @@ export default function MesasPage() {
 
     try {
       // 1. Desasignar en backend
-      await fetch('/api/mesas/modificar', {
+      await apiFetch('/api/mesas/modificar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ unassignList: [{ mesa: selectedMesa, silla: currentSillas }] })
@@ -182,7 +183,7 @@ export default function MesasPage() {
 
   const handleAssign = async (asistente_id: number, mesa: number, silla: number) => {
     try {
-      const res = await fetch('/api/mesas/asignar', {
+      const res = await apiFetch('/api/mesas/asignar', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ asistente_id, mesa, silla })
@@ -206,7 +207,7 @@ export default function MesasPage() {
   const handleUnassign = async (asistente_id: number) => {
     if (!confirm('¿Seguro que deseas quitar a esta persona de la silla?')) return;
     try {
-      const res = await fetch('/api/mesas/asignar', {
+      const res = await apiFetch('/api/mesas/asignar', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ asistente_id, mesa: null, silla: null })
@@ -224,7 +225,7 @@ export default function MesasPage() {
 
   const handleToggleServir = async (asistente_id: number, currentStatus: boolean) => {
     try {
-      const res = await fetch('/api/mesas/servir', {
+      const res = await apiFetch('/api/mesas/servir', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ asistente_id, comida_servida: !currentStatus })
@@ -244,7 +245,7 @@ export default function MesasPage() {
     if (!confirm('⚠️ ZONA DE RIESGO ⚠️\n\n¿Estás completamente seguro de que quieres eliminar TODAS las mesas y sillas? Esto levantará a todas las personas de sus asientos y el salón quedará vacío.')) return;
 
     try {
-      const res = await fetch('/api/mesas/reset', { method: 'POST' });
+      const res = await apiFetch('/api/mesas/reset', { method: 'POST' });
       if (!res.ok) throw new Error('Error al reiniciar');
       
       setConfig(null);

@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { withAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function PATCH(request: NextRequest) {
+async function patchServir(request: NextRequest) {
   try {
+    const eventoId = request.headers.get('x-evento-id');
+    if (!eventoId) return NextResponse.json({ error: 'Falta evento_id' }, { status: 400 });
+
     const body = await request.json();
     const { asistente_id, comida_servida } = body;
 
@@ -15,7 +19,8 @@ export async function PATCH(request: NextRequest) {
     const { error } = await supabase
       .from('asistentes')
       .update({ comida_servida })
-      .eq('id', asistente_id);
+      .eq('id', asistente_id)
+      .eq('evento_id', parseInt(eventoId));
 
     if (error) throw error;
 
@@ -25,3 +30,5 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Error al actualizar estado de comida' }, { status: 500 });
   }
 }
+
+export const PATCH = withAuth(patchServir);

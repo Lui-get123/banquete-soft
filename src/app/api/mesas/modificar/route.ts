@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { withAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+async function postModificar(request: NextRequest) {
   try {
+    const eventoId = request.headers.get('x-evento-id');
+    if (!eventoId) return NextResponse.json({ error: 'Falta evento_id' }, { status: 400 });
+
     const body = await request.json();
     const { unassignList } = body;
 
@@ -13,7 +17,10 @@ export async function POST(request: NextRequest) {
     }
 
     for (const instruction of unassignList) {
-      let query = supabase.from('asistentes').update({ mesa: null, silla: null }).eq('mesa', instruction.mesa);
+      let query = supabase.from('asistentes')
+        .update({ mesa: null, silla: null, comida_servida: false })
+        .eq('mesa', instruction.mesa)
+        .eq('evento_id', parseInt(eventoId));
       
       if (instruction.silla !== undefined) {
         query = query.eq('silla', instruction.silla);
@@ -29,3 +36,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error al desasignar en lote' }, { status: 500 });
   }
 }
+
+export const POST = withAuth(postModificar);

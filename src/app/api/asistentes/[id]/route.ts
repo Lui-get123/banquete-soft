@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { withAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-// PATCH - Update asistente (e.g., change status)
-export async function PATCH(
+async function patchAsistente(
   request: NextRequest,
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -15,10 +15,7 @@ export async function PATCH(
     const { estado } = body;
 
     if (estado !== 'presente' && estado !== 'no_presente') {
-      return NextResponse.json(
-        { error: 'Estado inválido' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
     }
 
     const updateData: any = { estado, updated_at: new Date().toISOString() };
@@ -41,15 +38,11 @@ export async function PATCH(
     return NextResponse.json(updatedAsistente);
   } catch (error) {
     console.error('Error updating asistente:', error);
-    return NextResponse.json(
-      { error: 'Error al actualizar asistente' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al actualizar asistente' }, { status: 500 });
   }
 }
 
-// DELETE - Delete asistente
-export async function DELETE(
+async function deleteAsistente(
   request: NextRequest,
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -67,9 +60,9 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting asistente:', error);
-    return NextResponse.json(
-      { error: 'Error al eliminar asistente' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al eliminar asistente' }, { status: 500 });
   }
 }
+
+export const PATCH = withAuth(patchAsistente);
+export const DELETE = withAuth(deleteAsistente);

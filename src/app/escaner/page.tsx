@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Html5Qrcode } from 'html5-qrcode';
+import { apiFetch } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 // Componente de escáner simple y seguro
@@ -104,7 +105,7 @@ export default function EscanerPage() {
   const handleScan = async (qrToken: string) => {
     setScanning(false);
     try {
-      const response = await fetch(`/api/asistentes/qr/${qrToken}?t=${Date.now()}`, {
+      const response = await apiFetch(`/api/asistentes/qr/${qrToken}?t=${Date.now()}`, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -127,7 +128,7 @@ export default function EscanerPage() {
     if (!asistente) return;
     try {
       const nuevoEstado = asistente.estado === 'presente' ? 'no_presente' : 'presente';
-      const response = await fetch(`/api/asistentes/${asistente.id}`, {
+      const response = await apiFetch(`/api/asistentes/${asistente.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado }),

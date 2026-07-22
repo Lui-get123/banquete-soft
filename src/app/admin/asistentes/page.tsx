@@ -7,6 +7,8 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
+import { apiFetch } from '@/lib/api';
+import { generarImagenBoleta } from '@/lib/boleta-utils';
 
 export default function AsistentesPage() {
   const router = useRouter();
@@ -37,7 +39,14 @@ export default function AsistentesPage() {
 
   const fetchAsistentes = async () => {
     try {
-      const response = await fetch('/api/asistentes');
+      const response = await apiFetch('/api/asistentes');
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/login');
+          return;
+        }
+        throw new Error('Error in request');
+      }
       const data = await response.json();
       setAsistentes(data);
       calculateStats(data);
@@ -85,7 +94,7 @@ export default function AsistentesPage() {
     if (!confirm('¿Está seguro de eliminar este registro?')) return;
 
     try {
-      const response = await fetch(`/api/asistentes/${id}`, {
+      const response = await apiFetch(`/api/asistentes/${id}`, {
         method: 'DELETE',
       });
 
@@ -97,6 +106,30 @@ export default function AsistentesPage() {
     } catch (error) {
       console.error('Error deleting asistente:', error);
       alert('Error al eliminar asistente');
+    }
+  };
+
+  const handleResendQR = async (asistente: any) => {
+    const email = prompt('¿A qué correo deseas enviar la boleta?', asistente.email || '');
+    if (!email) return;
+
+    try {
+      alert('Generando y enviando correo... Por favor espera.');
+      const boletaBase64 = await generarImagenBoleta(asistente);
+      const response = await apiFetch('/api/enviar-boletas', {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+          boletasBase64: [boletaBase64],
+          customMessage: 'Aquí tienes el reenvío de tu boleta para el evento. ¡No la pierdas!'
+        })
+      });
+
+      if (!response.ok) throw new Error('Error enviando correo');
+      alert('Correo reenviado exitosamente.');
+    } catch (error) {
+      console.error(error);
+      alert('Ocurrió un error al enviar el correo.');
     }
   };
 
@@ -487,7 +520,13 @@ export default function AsistentesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-warm-600">{formatDate(asistente.fecha_pago)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3">
+                      <button
+                        onClick={() => handleResendQR(asistente)}
+                        className="text-primary-600 hover:text-primary-800 transition-colors hover:underline"
+                      >
+                        Reenviar QR
+                      </button>
                       <button
                         onClick={() => handleDelete(asistente.id)}
                         className="text-danger-500 hover:text-danger-700 transition-colors hover:underline"

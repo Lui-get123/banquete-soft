@@ -3,10 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { apiFetch } from '@/lib/api';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  
+  const [eventos, setEventos] = useState<any[]>([]);
+  const [eventoActivo, setEventoActivo] = useState<string>('');
+  const [nuevoEventoNombre, setNuevoEventoNombre] = useState('');
+  const [creandoEvento, setCreandoEvento] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -18,7 +24,57 @@ export default function DashboardPage() {
     }
 
     setUser(JSON.parse(userData));
+    cargarEventos();
   }, [router]);
+
+  const cargarEventos = async () => {
+    try {
+      const res = await apiFetch('/api/eventos');
+      if (res.ok) {
+        const data = await res.json();
+        setEventos(data);
+        
+        const guardado = localStorage.getItem('evento_id');
+        if (guardado && data.find((e: any) => e.id.toString() === guardado)) {
+          setEventoActivo(guardado);
+        } else if (data.length > 0) {
+          setEventoActivo(data[0].id.toString());
+          localStorage.setItem('evento_id', data[0].id.toString());
+        }
+      }
+    } catch (error) {
+      console.error('Error cargando eventos:', error);
+    }
+  };
+
+  const handleCambiarEvento = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setEventoActivo(val);
+    localStorage.setItem('evento_id', val);
+    // Recargar para limpiar cualquier caché
+    window.location.reload();
+  };
+
+  const handleCrearEvento = async () => {
+    if (!nuevoEventoNombre.trim()) return;
+    setCreandoEvento(true);
+    try {
+      const res = await apiFetch('/api/eventos', {
+        method: 'POST',
+        body: JSON.stringify({ nombre: nuevoEventoNombre.trim() })
+      });
+      if (res.ok) {
+        setNuevoEventoNombre('');
+        await cargarEventos();
+      } else {
+        alert('Error al crear evento');
+      }
+    } catch (e) {
+      alert('Error de conexión');
+    } finally {
+      setCreandoEvento(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -58,13 +114,45 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        {/* Welcome Section */}
-        <div className="mb-10 animate-fadeInUp">
-          <h2 className="text-3xl font-display font-bold text-warm-900 tracking-tight">
-            Panel Principal
-          </h2>
-          <div className="bg-accent-500 h-1 w-16 rounded-full mt-3 mb-3" />
-          <p className="text-warm-500">Seleccione una opción para comenzar</p>
+        {/* Welcome & Event Selection */}
+        <div className="mb-10 animate-fadeInUp flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h2 className="text-3xl font-display font-bold text-warm-900 tracking-tight">
+              Panel Principal
+            </h2>
+            <div className="bg-accent-500 h-1 w-16 rounded-full mt-3 mb-3" />
+            <p className="text-warm-500">Seleccione una opción para comenzar</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-warm-200 w-full md:w-auto min-w-[300px]">
+            <label className="block text-sm font-bold text-primary-700 mb-2">Evento Activo</label>
+            <select 
+              className="input-field mb-3 bg-warm-50"
+              value={eventoActivo}
+              onChange={handleCambiarEvento}
+            >
+              {eventos.map(e => (
+                <option key={e.id} value={e.id}>{e.nombre}</option>
+              ))}
+            </select>
+            
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                className="input-field text-sm" 
+                placeholder="Nuevo evento..."
+                value={nuevoEventoNombre}
+                onChange={e => setNuevoEventoNombre(e.target.value)}
+              />
+              <button 
+                onClick={handleCrearEvento}
+                disabled={creandoEvento || !nuevoEventoNombre.trim()}
+                className="btn-primary text-sm whitespace-nowrap px-3 py-2 disabled:opacity-50"
+              >
+                Crear
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Dashboard Cards Grid */}
@@ -75,42 +163,12 @@ export default function DashboardPage() {
             className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-1"
           >
             <div className="flex items-center justify-center w-14 h-14 bg-primary-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
-              <svg
-                className="w-7 h-7 text-primary-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
+              <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">
-              Registrar Pago
-            </h3>
-            <p className="text-warm-500 text-sm leading-relaxed">
-              Registrar nuevos asistentes y generar códigos QR
-            </p>
-            <div className="mt-4 flex items-center text-primary-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span>Ir a registro</span>
-              <svg
-                className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
+            <h3 className="text-lg font-semibold text-warm-900 mb-1">Registrar Pago</h3>
+            <p className="text-warm-500 text-sm leading-relaxed">Registrar nuevos asistentes y generar códigos QR</p>
           </Link>
 
           {/* Escáner QR */}
@@ -119,86 +177,26 @@ export default function DashboardPage() {
             className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-2"
           >
             <div className="flex items-center justify-center w-14 h-14 bg-accent-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
-              <svg
-                className="w-7 h-7 text-accent-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
-                />
+              <svg className="w-7 h-7 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">
-              Escáner QR
-            </h3>
-            <p className="text-warm-500 text-sm leading-relaxed">
-              Validar entrada de asistentes usando códigos QR
-            </p>
-            <div className="mt-4 flex items-center text-accent-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span>Ir a escáner</span>
-              <svg
-                className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
+            <h3 className="text-lg font-semibold text-warm-900 mb-1">Escáner QR</h3>
+            <p className="text-warm-500 text-sm leading-relaxed">Validar entrada de asistentes usando códigos QR</p>
           </Link>
 
           {/* Administración */}
           <Link
-            href="/admin"
+            href="/admin/asistentes"
             className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-3"
           >
             <div className="flex items-center justify-center w-14 h-14 bg-warm-200 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
-              <svg
-                className="w-7 h-7 text-warm-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
+              <svg className="w-7 h-7 text-warm-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">
-              Administración
-            </h3>
-            <p className="text-warm-500 text-sm leading-relaxed">
-              Ver estadísticas y gestionar asistentes
-            </p>
-            <div className="mt-4 flex items-center text-warm-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span>Ir a admin</span>
-              <svg
-                className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
+            <h3 className="text-lg font-semibold text-warm-900 mb-1">Asistentes</h3>
+            <p className="text-warm-500 text-sm leading-relaxed">Ver y gestionar lista de asistentes y tickets</p>
           </Link>
 
           {/* Asignación de Mesas */}
@@ -207,32 +205,27 @@ export default function DashboardPage() {
             className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-3"
           >
             <div className="flex items-center justify-center w-14 h-14 bg-success-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
-              <svg
-                className="w-7 h-7 text-success-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-7 h-7 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">
-              Asignación de Mesas
-            </h3>
-            <p className="text-warm-500 text-sm leading-relaxed">
-              Diseñar salón y asignar sillas a invitados
-            </p>
-            <div className="mt-4 flex items-center text-success-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span>Ir a mesas</span>
-              <svg
-                className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <h3 className="text-lg font-semibold text-warm-900 mb-1">Asignación de Mesas</h3>
+            <p className="text-warm-500 text-sm leading-relaxed">Diseñar salón y asignar sillas a invitados</p>
+          </Link>
+
+          {/* Estadísticas */}
+          <Link
+            href="/admin/estadisticas"
+            className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-3"
+          >
+            <div className="flex items-center justify-center w-14 h-14 bg-indigo-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
+              <svg className="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
               </svg>
             </div>
+            <h3 className="text-lg font-semibold text-warm-900 mb-1">Estadísticas</h3>
+            <p className="text-warm-500 text-sm leading-relaxed">Centro de mando y gráficos financieros</p>
           </Link>
         </div>
       </main>

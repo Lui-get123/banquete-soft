@@ -1,43 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { withAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function PATCH(request: NextRequest) {
+async function patchAsignar(request: NextRequest) {
   try {
+    const eventoId = request.headers.get('x-evento-id');
+    if (!eventoId) return NextResponse.json({ error: 'Falta evento_id' }, { status: 400 });
+
     const body = await request.json();
     const { asistente_id, mesa, silla } = body;
 
-    if (!asistente_id) {
-      return NextResponse.json({ error: 'Falta ID de asistente' }, { status: 400 });
+    if (!asistente_id || mesa === undefined || silla === undefined) {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
     }
 
-    // Check if the seat is already taken by someone else (only if assigning)
     if (mesa !== null && silla !== null) {
-      const { data: existing } = await supabase
+      const { data: existing, error: checkError } = await supabase
         .from('asistentes')
-        .select('id, nombre')
+        .select('id')
         .eq('mesa', mesa)
         .eq('silla', silla)
-        .single();
-        
-      if (existing && existing.id !== asistente_id) {
-        return NextResponse.json({ error: `La silla ya está ocupada por ${existing.nombre}` }, { status: 400 });
+        .eq('evento_id', parseInt(eventoId));
+
+      if (checkError) throw checkError;
+
+      if (existing && existing.length > 0) {
+        if (existing[0].id !== asistente_id) {
+          return NextResponse.json({ error: 'La silla ya está ocupada' }, { status: 400 });
+        }
       }
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('asistentes')
-      .update({ mesa, silla, updated_at: new Date().toISOString() })
+      .update({ mesa, silla, comida_servida: false })
       .eq('id', asistente_id)
-      .select()
-      .single();
+      .eq('evento_id', parseInt(eventoId));
 
     if (error) throw error;
 
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error assigning mesa:', error);
-    return NextResponse.json({ error: 'Error al asignar la silla' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al asignar mesa' }, { status: 500 });
   }
 }
+
+export const PATCH = withAuth(patchAsignar);

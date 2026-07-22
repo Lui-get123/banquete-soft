@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { withAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
-export async function GET() {
+async function getConfigHandler(request: NextRequest) {
   try {
+    const eventoId = request.headers.get('x-evento-id');
+    if (!eventoId) return NextResponse.json({ error: 'Falta evento_id' }, { status: 400 });
+
+    const configId = `layout_${eventoId}`;
+
     const { data, error } = await supabase
       .from('configuracion')
       .select('valor')
-      .eq('id', 'layout')
+      .eq('id', configId)
+      .eq('evento_id', parseInt(eventoId))
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 is "no rows returned", which is fine for the first time
       throw error;
     }
 
@@ -31,19 +37,29 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function postConfigHandler(request: NextRequest) {
   try {
+    const eventoId = request.headers.get('x-evento-id');
+    if (!eventoId) return NextResponse.json({ error: 'Falta evento_id' }, { status: 400 });
+
     const body = await request.json();
 
     if (!body || !body.mesas) {
       return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 });
     }
 
+    // Upsert expects a unique constraint, but since we are introducing evento_id
+    // Wait, upserting by id='layout' alone will overwrite across events if id is the only PK.
+    // Assuming 'id' + 'evento_id' is NOT the primary key (PK is just 'id'), 
+    // we need to either change the DB constraint or just use a dynamic ID like `layout_${eventoId}`
+    const configId = `layout_${eventoId}`;
+
     const { error } = await supabase
       .from('configuracion')
       .upsert({
-        id: 'layout',
-        valor: body
+        id: configId,
+        valor: body,
+        evento_id: parseInt(eventoId)
       });
 
     if (error) throw error;
@@ -54,3 +70,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error al guardar configuración' }, { status: 500 });
   }
 }
+
+export const GET = withAuth(getConfigHandler);
+export const POST = withAuth(postConfigHandler);
