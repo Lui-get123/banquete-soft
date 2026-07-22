@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { Utensils, CheckCircle } from 'lucide-react';
 
 interface Asistente {
   id: number;
@@ -384,7 +385,9 @@ export default function MesasPage() {
                         {ocupantes.length} / {totalSillasMesa}
                       </span>
                       {mesaServida && (
-                        <span className="absolute bottom-4 text-xs font-bold text-amber-600 bg-amber-100 px-2 rounded-full">SERVIDA ✅</span>
+                        <span className="absolute bottom-4 text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                          SERVIDA <CheckCircle className="w-3 h-3" />
+                        </span>
                       )}
                       
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -509,7 +512,15 @@ export default function MesasPage() {
                                     : 'bg-warm-100 text-warm-700 hover:bg-primary-100 hover:text-primary-700 hover:border-primary-300 border border-transparent'
                                 }`}
                               >
-                                {ocupante.comida_servida ? '✅ Comida Servida (Deshacer)' : '🍽️ Marcar Servida'}
+                                {ocupante.comida_servida ? (
+                                  <>
+                                    <CheckCircle className="w-4 h-4" /> Comida Servida (Deshacer)
+                                  </>
+                                ) : (
+                                  <>
+                                    <Utensils className="w-4 h-4" /> Marcar Servida
+                                  </>
+                                )}
                               </button>
                             </div>
                           ) : (
