@@ -10,6 +10,7 @@ interface Asistente {
   estado: string;
   mesa: number | null;
   silla: number | null;
+  comida_servida?: boolean;
 }
 
 interface MesaConfig {
@@ -213,7 +214,25 @@ export default function MesasPage() {
       if (!res.ok) throw new Error('Error desasignando');
 
       setAsistentes(prev => prev.map(a => 
-        a.id === asistente_id ? { ...a, mesa: null, silla: null } : a
+        a.id === asistente_id ? { ...a, mesa: null, silla: null, comida_servida: false } : a
+      ));
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  const handleToggleServir = async (asistente_id: number, currentStatus: boolean) => {
+    try {
+      const res = await fetch('/api/mesas/servir', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ asistente_id, comida_servida: !currentStatus })
+      });
+
+      if (!res.ok) throw new Error('Error al actualizar estado de comida');
+
+      setAsistentes(prev => prev.map(a => 
+        a.id === asistente_id ? { ...a, comida_servida: !currentStatus } : a
       ));
     } catch (error: any) {
       alert(error.message);
@@ -343,32 +362,43 @@ export default function MesasPage() {
                 const ocupantes = asistentes.filter(a => a.mesa === mesaNumero);
                 const isFull = ocupantes.length === totalSillasMesa && totalSillasMesa > 0;
                 const isEmpty = ocupantes.length === 0;
+                
+                const ocupadosConComida = ocupantes.filter(o => o.comida_servida).length;
+                const mesaServida = ocupantes.length > 0 && ocupadosConComida === ocupantes.length;
 
                 return (
                   <div key={mesaNumero} className="relative group">
                     <button
                       onClick={() => setSelectedMesa(mesaNumero)}
                       className={`relative aspect-square w-full rounded-full flex flex-col items-center justify-center transition-all duration-300 transform group-hover:scale-105 shadow-md border-4 
-                        ${isFull 
-                          ? 'bg-primary-50 border-primary-500' 
-                          : isEmpty 
-                            ? 'bg-white border-warm-200' 
-                            : 'bg-accent-50 border-accent-400'}`}
+                        ${mesaServida 
+                          ? 'bg-amber-50 border-amber-500 shadow-amber-200' 
+                          : isFull 
+                            ? 'bg-primary-50 border-primary-500' 
+                            : isEmpty 
+                              ? 'bg-white border-warm-200' 
+                              : 'bg-accent-50 border-accent-400'}`}
                     >
                       <span className="text-2xl font-display font-bold text-warm-900">Mesa {mesaNumero}</span>
-                      <span className={`text-sm font-medium mt-1 ${isFull ? 'text-primary-600' : 'text-warm-500'}`}>
+                      <span className={`text-sm font-medium mt-1 ${mesaServida ? 'text-amber-600' : isFull ? 'text-primary-600' : 'text-warm-500'}`}>
                         {ocupantes.length} / {totalSillasMesa}
                       </span>
+                      {mesaServida && (
+                        <span className="absolute bottom-4 text-xs font-bold text-amber-600 bg-amber-100 px-2 rounded-full">SERVIDA ✅</span>
+                      )}
                       
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         {Array.from({ length: totalSillasMesa }).map((__, i) => {
                           const angle = (i * 360) / totalSillasMesa;
                           const radius = 60;
-                          const sillaOcupada = ocupantes.some(o => o.silla === (i + 1));
+                          const ocupante = ocupantes.find(o => o.silla === (i + 1));
+                          const sillaOcupada = !!ocupante;
+                          const sillaServida = ocupante?.comida_servida;
+                          
                           return (
                             <div 
                               key={i}
-                              className={`absolute w-3 h-3 rounded-full ${sillaOcupada ? 'bg-primary-500' : 'bg-warm-200'}`}
+                              className={`absolute w-3 h-3 rounded-full ${sillaServida ? 'bg-amber-500' : sillaOcupada ? 'bg-primary-500' : 'bg-warm-200'}`}
                               style={{
                                 transform: `rotate(${angle}deg) translateY(-${radius}px)`
                               }}
@@ -447,21 +477,39 @@ export default function MesasPage() {
                           <div className="flex justify-between items-start mb-2">
                             <span className="font-medium text-warm-500 text-sm">Silla {sillaNumero}</span>
                             {ocupante && (
-                              <span className="stat-badge bg-primary-100 text-primary-700 text-xs py-1">Ocupada</span>
+                              <div className="flex gap-1">
+                                {ocupante.comida_servida && (
+                                  <span className="stat-badge bg-amber-100 text-amber-700 text-xs py-1">Servida</span>
+                                )}
+                                <span className="stat-badge bg-primary-100 text-primary-700 text-xs py-1">Ocupada</span>
+                              </div>
                             )}
                           </div>
 
                           {ocupante ? (
-                            <div className="flex justify-between items-center mt-2">
-                              <div>
-                                <p className="font-bold text-warm-900">{ocupante.nombre}</p>
-                                <p className="text-xs text-warm-500">{ocupante.documento}</p>
+                            <div className="flex flex-col mt-2">
+                              <div className="flex justify-between items-center mb-3">
+                                <div>
+                                  <p className="font-bold text-warm-900">{ocupante.nombre}</p>
+                                  <p className="text-xs text-warm-500">{ocupante.documento}</p>
+                                </div>
+                                <button 
+                                  onClick={() => handleUnassign(ocupante.id)}
+                                  className="text-danger-500 hover:text-danger-700 hover:bg-danger-50 p-2 rounded-lg transition-colors text-sm font-medium"
+                                  title="Quitar persona de la mesa"
+                                >
+                                  Levantar
+                                </button>
                               </div>
-                              <button 
-                                onClick={() => handleUnassign(ocupante.id)}
-                                className="text-danger-500 hover:text-danger-700 hover:bg-danger-50 p-2 rounded-lg transition-colors text-sm font-medium"
+                              <button
+                                onClick={() => handleToggleServir(ocupante.id, !!ocupante.comida_servida)}
+                                className={`w-full py-2 rounded-lg font-medium transition-colors text-sm flex justify-center items-center gap-2 ${
+                                  ocupante.comida_servida 
+                                    ? 'bg-amber-100 text-amber-700 border border-amber-300 hover:bg-amber-200' 
+                                    : 'bg-warm-100 text-warm-700 hover:bg-primary-100 hover:text-primary-700 hover:border-primary-300 border border-transparent'
+                                }`}
                               >
-                                Levantar
+                                {ocupante.comida_servida ? '✅ Comida Servida (Deshacer)' : '🍽️ Marcar Servida'}
                               </button>
                             </div>
                           ) : (
