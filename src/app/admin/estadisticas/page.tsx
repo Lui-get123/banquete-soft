@@ -139,7 +139,7 @@ export default function EstadisticasPage() {
                       <Cell key={`cell-${index}`} fill={COLORS_METODOS[index % COLORS_METODOS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
