@@ -18,6 +18,7 @@ interface Asistente {
 interface MesaConfig {
   id: number;
   sillas: number;
+  etiqueta?: string;
 }
 
 interface Config {
@@ -150,36 +151,72 @@ export default function MesasPage() {
 
   const handleRemoveSilla = async () => {
     if (!config || selectedMesa === null) return;
-    const mesaIdx = config.mesas.findIndex(m => m.id === selectedMesa);
-    const currentSillas = config.mesas[mesaIdx].sillas;
     
+    const currentMesa = config.mesas.find(m => m.id === selectedMesa);
+    if (!currentMesa) return;
+
+    const currentSillas = currentMesa.sillas;
     if (currentSillas <= 1) {
-      return alert('La mesa debe tener al menos 1 silla. Si no, elimina la mesa completa.');
+      alert('La mesa debe tener al menos 1 silla.');
+      return;
     }
-    
-    if (!confirm(`¿Seguro que deseas quitar la silla #${currentSillas}? Si hay alguien sentado ahí, perderá el puesto.`)) return;
+
+    const ocupanteUltimaSilla = asistentes.find(a => a.mesa === selectedMesa && a.silla === currentSillas);
+    if (ocupanteUltimaSilla) {
+      if (!confirm(`La silla ${currentSillas} está ocupada por ${ocupanteUltimaSilla.nombre}. ¿Deseas eliminarla de todos modos y desasignar a la persona?`)) {
+        return;
+      }
+    }
+
+    const newConfig = {
+      ...config,
+      mesas: config.mesas.map(m => 
+        m.id === selectedMesa ? { ...m, sillas: m.sillas - 1 } : m
+      )
+    };
+    setConfig(newConfig);
 
     try {
-      // 1. Desasignar en backend
-      await apiFetch('/api/mesas/modificar', {
+      await apiFetch('/api/mesas/config', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unassignList: [{ mesa: selectedMesa, silla: currentSillas }] })
+        body: JSON.stringify(newConfig),
       });
 
-      // 2. Desasignar localmente
-      setAsistentes(prev => prev.map(a => 
-        (a.mesa === selectedMesa && a.silla === currentSillas) ? { ...a, mesa: null, silla: null } : a
-      ));
-
-      // 3. Quitar de la configuración
-      const newConfig = { mesas: [...config.mesas] };
-      newConfig.mesas[mesaIdx].sillas -= 1;
-      await saveConfig(newConfig);
+      if (ocupanteUltimaSilla) {
+        setAsistentes(prev => prev.map(a => 
+          (a.mesa === selectedMesa && a.silla === currentSillas) ? { ...a, mesa: null, silla: null } : a
+        ));
+        
+        await apiFetch('/api/mesas/modificar', {
+          method: 'POST',
+          body: JSON.stringify({
+            unassignList: [{ mesa: selectedMesa, silla: currentSillas }]
+          }),
+        });
+      }
     } catch (error) {
+      console.error('Error removing silla:', error);
       alert('Error al quitar silla');
     }
   };
+
+  const handleUpdateMesaEtiqueta = async (mesaId: number, etiqueta: string) => {
+    if (!config) return;
+    const newConfig = {
+      ...config,
+      mesas: config.mesas.map(m => m.id === mesaId ? { ...m, etiqueta } : m)
+    };
+    setConfig(newConfig);
+    try {
+      await apiFetch('/api/mesas/config', {
+        method: 'POST',
+        body: JSON.stringify(newConfig)
+      });
+    } catch (e) {
+      console.error('Error actualizando etiqueta:', e);
+    }
+  };
+
 
   const handleAssign = async (asistente_id: number, mesa: number, silla: number) => {
     try {
@@ -382,6 +419,11 @@ export default function MesasPage() {
                               : 'bg-accent-50 border-accent-400'}`}
                     >
                       <span className="text-2xl font-display font-bold text-warm-900">Mesa {mesaNumero}</span>
+                      {mesaConfig?.etiqueta && (
+                        <span className="text-xs font-semibold text-warm-600 bg-warm-200/50 px-2 py-0.5 rounded-full mt-1 mb-1 truncate max-w-[80%] text-center">
+                          {mesaConfig.etiqueta}
+                        </span>
+                      )}
                       <span className={`text-sm font-medium mt-1 ${mesaServida ? 'text-amber-600' : isFull ? 'text-primary-600' : 'text-warm-500'}`}>
                         {ocupantes.length} / {totalSillasMesa}
                       </span>
@@ -434,9 +476,18 @@ export default function MesasPage() {
           <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl animate-fadeInUp">
             
             <div className="p-6 border-b border-warm-100 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-warm-50 gap-4 rounded-t-3xl">
-              <h3 className="text-2xl font-display font-bold text-warm-900">
-                Gestión - Mesa {selectedMesa}
-              </h3>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-2xl font-display font-bold text-warm-900">
+                  Gestión - Mesa {selectedMesa}
+                </h3>
+                <input
+                  type="text"
+                  placeholder="Ej: Familia Polo (Opcional)"
+                  className="input-field text-sm bg-white"
+                  value={config.mesas.find(m => m.id === selectedMesa)?.etiqueta || ''}
+                  onChange={(e) => handleUpdateMesaEtiqueta(selectedMesa, e.target.value)}
+                />
+              </div>
               
               <div className="flex items-center gap-3 flex-wrap">
                 <button 
