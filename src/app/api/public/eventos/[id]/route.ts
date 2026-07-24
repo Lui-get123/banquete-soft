@@ -24,7 +24,13 @@ export async function GET(
       return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 });
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error) {
     console.error('Error fetching public evento:', error);
     return NextResponse.json({ error: 'Error al obtener evento' }, { status: 500 });
