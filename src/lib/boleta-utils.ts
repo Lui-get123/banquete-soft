@@ -5,8 +5,6 @@ export interface BoletaConfig {
   qr_x: number; // percentage 0 to 1
   qr_y: number; // percentage 0 to 1
   qr_size: number; // percentage of width (e.g. 0.18)
-  name_x: number; // percentage 0 to 1
-  name_y: number; // percentage 0 to 1
   name_color: string;
   name_size: number; // percentage of width (e.g. 0.025)
 }
@@ -35,8 +33,6 @@ export const generarImagenBoleta = async (asistente: any, previewConfig?: Boleta
     qr_x: 0.7, 
     qr_y: 0.08,
     qr_size: 0.18,
-    name_x: 0.79, // centro del QR (0.7 + 0.18/2)
-    name_y: 0.28,
     name_color: '#5B2333',
     name_size: 0.025
   };
@@ -97,8 +93,9 @@ export const generarImagenBoleta = async (asistente: any, previewConfig?: Boleta
   const fontSize = Math.max(13, Math.round(canvas.width * (finalConfig.name_size || 0.025)));
   ctx.textAlign = 'center';
   
-  const textCenterX = Math.round(canvas.width * finalConfig.name_x);
-  const textCenterY = Math.round(canvas.height * finalConfig.name_y);
+  // Pegamos el nombre justo debajo del centro del QR
+  const textCenterX = qrXPx + (qrSizePx / 2);
+  const textCenterY = qrYPx + qrSizePx + fontSize + Math.max(4, Math.round(canvas.height * 0.005));
 
   ctx.fillStyle = finalConfig.name_color; 
   ctx.font = `bold ${fontSize}px Georgia, serif`;

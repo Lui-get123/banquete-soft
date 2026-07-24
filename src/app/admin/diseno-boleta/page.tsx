@@ -16,8 +16,6 @@ export default function DisenoBoletaPage() {
     qr_x: 0.7, 
     qr_y: 0.08,
     qr_size: 0.18,
-    name_x: 0.79,
-    name_y: 0.28,
     name_color: '#5B2333',
     name_size: 0.025
   });
@@ -181,22 +179,8 @@ export default function DisenoBoletaPage() {
             <hr className="border-warm-100" />
 
             <div>
-              <h3 className="font-bold text-warm-900 mb-4">Nombre del Invitado</h3>
+              <h3 className="font-bold text-warm-900 mb-4">Nombre del Invitado (Fijo bajo el QR)</h3>
               <div className="space-y-4">
-                <div>
-                  <label className="flex justify-between text-sm text-warm-700">
-                    <span>Posición Horizontal (X)</span>
-                    <span className="font-mono bg-warm-100 px-2 rounded">{Math.round(config.name_x * 100)}%</span>
-                  </label>
-                  <input type="range" min="0" max="1" step="0.01" value={config.name_x} onChange={e => handleSliderChange('name_x', parseFloat(e.target.value))} className="w-full accent-primary-600" />
-                </div>
-                <div>
-                  <label className="flex justify-between text-sm text-warm-700">
-                    <span>Posición Vertical (Y)</span>
-                    <span className="font-mono bg-warm-100 px-2 rounded">{Math.round(config.name_y * 100)}%</span>
-                  </label>
-                  <input type="range" min="0" max="1" step="0.01" value={config.name_y} onChange={e => handleSliderChange('name_y', parseFloat(e.target.value))} className="w-full accent-primary-600" />
-                </div>
                 <div>
                   <label className="flex justify-between text-sm text-warm-700">
                     <span>Tamaño del Texto</span>
@@ -221,8 +205,6 @@ export default function DisenoBoletaPage() {
                   qr_x: 0.7, 
                   qr_y: 0.08,
                   qr_size: 0.18,
-                  name_x: 0.79,
-                  name_y: 0.28,
                   name_color: '#5B2333',
                   name_size: 0.025
                 });
