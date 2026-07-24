@@ -32,7 +32,7 @@ export async function GET(
     }
 
     const response = NextResponse.json(data.valor);
-    response.headers.set('Cache-Control', 'public, max-age=60');
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
     return response;
   } catch (error) {
     console.error('Error fetching public boleta config:', error);
