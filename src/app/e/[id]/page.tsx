@@ -29,7 +29,7 @@ export default function PublicEventRegistrationPage({
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await fetch(`/api/public/eventos/${eventoId}`);
+        const res = await fetch(`/api/public/eventos/${eventoId}?t=${Date.now()}`, { cache: 'no-store' });
         const data = await res.json();
         
         if (res.ok) {

@@ -32,7 +32,7 @@ export default function RegistroPage() {
       const eid = localStorage.getItem('evento_id');
       if (eid) {
         try {
-          const res = await fetch(`/api/public/eventos/${eid}`);
+          const res = await fetch(`/api/public/eventos/${eid}?t=${Date.now()}`, { cache: 'no-store' });
           const data = await res.json();
           if (res.ok) {
             setEventoPrecio(data.precio_boleta || 0);
