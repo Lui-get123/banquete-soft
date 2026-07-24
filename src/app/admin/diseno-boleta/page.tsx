@@ -144,7 +144,7 @@ export default function DisenoBoletaPage() {
                 onChange={handleImageUpload}
                 className="w-full text-sm text-warm-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
               />
-              <p className="text-xs text-warm-400 mt-2">Sube una imagen vertical (Recomendado: 800x1200px, máx 2MB).</p>
+              <p className="text-xs text-warm-400 mt-2">Sube tu imagen (Vertical u Horizontal, máx 2MB).</p>
             </div>
 
             <hr className="border-warm-100" />
