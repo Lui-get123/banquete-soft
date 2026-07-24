@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'El teléfono y correo son obligatorios' }, { status: 400 });
     }
 
-    // Validar que el evento existe
+    // Validar que el evento existe y obtener su precio
     const { data: evento, error: eventoError } = await supabase
       .from('eventos')
-      .select('id')
+      .select('id, precio_boleta')
       .eq('id', parseInt(evento_id))
       .single();
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       telefono,
       email,
       metodo_pago: 'Auto-Registro',
-      monto: 0,
+      monto: evento.precio_boleta || 0,
       fecha_pago,
       qr_token: generateQRToken(),
       estado: 'no_presente',
