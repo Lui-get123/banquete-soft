@@ -26,6 +26,7 @@ export default function RegistroPage() {
   const [enviandoCorreo, setEnviandoCorreo] = useState(false);
   const [correoExito, setCorreoExito] = useState(false);
   const [eventoPrecio, setEventoPrecio] = useState(0);
+  const [eventoNombre, setEventoNombre] = useState('');
 
   useEffect(() => {
     const fetchPrecio = async () => {
@@ -36,6 +37,7 @@ export default function RegistroPage() {
           const data = await res.json();
           if (res.ok) {
             setEventoPrecio(data.precio_boleta || 0);
+            setEventoNombre(data.nombre || '');
           }
         } catch (e) {
           console.error('Error fetching precio', e);
@@ -194,6 +196,9 @@ export default function RegistroPage() {
               <div>
                 <h2 className="text-2xl font-bold font-display text-warm-900">Nuevo Registro de Pago</h2>
                 <div className="h-1 w-12 bg-accent-500 rounded-full mt-1"></div>
+                {eventoNombre && (
+                  <p className="mt-2 text-primary-600 font-medium">Evento Activo: {eventoNombre}</p>
+                )}
               </div>
             </div>
             
