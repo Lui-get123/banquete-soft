@@ -207,76 +207,81 @@ export default function DashboardPage() {
 
         {/* Dashboard Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Registrar Pago */}
-          <Link
+          <DashboardCard
             href="/registro"
-            className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-1"
-          >
-            <div className="flex items-center justify-center w-14 h-14 bg-primary-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
+            title="Registrar Pago"
+            desc="Registrar nuevos asistentes y generar códigos QR"
+            delayClass="animate-fadeInUp-delay-1"
+            baseColorClass="bg-primary-100"
+            iconColorClass="text-primary-600"
+            disabled={!eventoActivo}
+            icon={
               <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">Registrar Pago</h3>
-            <p className="text-warm-500 text-sm leading-relaxed">Registrar nuevos asistentes y generar códigos QR</p>
-          </Link>
+            }
+          />
 
-          {/* Escáner QR */}
-          <Link
+          <DashboardCard
             href="/escaner"
-            className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-2"
-          >
-            <div className="flex items-center justify-center w-14 h-14 bg-accent-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
+            title="Escáner QR"
+            desc="Validar entrada de asistentes usando códigos QR"
+            delayClass="animate-fadeInUp-delay-2"
+            baseColorClass="bg-accent-100"
+            iconColorClass="text-accent-600"
+            disabled={!eventoActivo}
+            icon={
               <svg className="w-7 h-7 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">Escáner QR</h3>
-            <p className="text-warm-500 text-sm leading-relaxed">Validar entrada de asistentes usando códigos QR</p>
-          </Link>
+            }
+          />
 
-          {/* Administración */}
-          <Link
+          <DashboardCard
             href="/admin/asistentes"
-            className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-3"
-          >
-            <div className="flex items-center justify-center w-14 h-14 bg-warm-200 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
+            title="Asistentes"
+            desc="Ver y gestionar lista de asistentes y tickets"
+            delayClass="animate-fadeInUp-delay-3"
+            baseColorClass="bg-warm-200"
+            iconColorClass="text-warm-600"
+            disabled={!eventoActivo}
+            icon={
               <svg className="w-7 h-7 text-warm-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">Asistentes</h3>
-            <p className="text-warm-500 text-sm leading-relaxed">Ver y gestionar lista de asistentes y tickets</p>
-          </Link>
+            }
+          />
 
-          {/* Asignación de Mesas */}
-          <Link
+          <DashboardCard
             href="/admin/mesas"
-            className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-3"
-          >
-            <div className="flex items-center justify-center w-14 h-14 bg-success-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
+            title="Asignación de Mesas"
+            desc="Diseñar salón y asignar sillas a invitados"
+            delayClass="animate-fadeInUp-delay-3"
+            baseColorClass="bg-success-100"
+            iconColorClass="text-success-600"
+            disabled={!eventoActivo}
+            icon={
               <svg className="w-7 h-7 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">Asignación de Mesas</h3>
-            <p className="text-warm-500 text-sm leading-relaxed">Diseñar salón y asignar sillas a invitados</p>
-          </Link>
+            }
+          />
 
-          {/* Estadísticas */}
-          <Link
+          <DashboardCard
             href="/admin/estadisticas"
-            className="card-hover p-6 cursor-pointer group animate-fadeInUp-delay-3"
-          >
-            <div className="flex items-center justify-center w-14 h-14 bg-indigo-100 rounded-full mb-4 group-hover:scale-105 transition-transform duration-300">
+            title="Estadísticas"
+            desc="Centro de mando y gráficos financieros"
+            delayClass="animate-fadeInUp-delay-3"
+            baseColorClass="bg-indigo-100"
+            iconColorClass="text-indigo-600"
+            disabled={!eventoActivo}
+            icon={
               <svg className="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
               </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-warm-900 mb-1">Estadísticas</h3>
-            <p className="text-warm-500 text-sm leading-relaxed">Centro de mando y gráficos financieros</p>
-          </Link>
+            }
+          />
         </div>
       </main>
 
@@ -289,3 +294,44 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+const DashboardCard = ({
+  href,
+  title,
+  desc,
+  icon,
+  delayClass,
+  baseColorClass,
+  iconColorClass,
+  disabled
+}: any) => {
+  if (disabled) {
+    return (
+      <div
+        onClick={() => alert('Debes crear o seleccionar un evento primero para acceder a esta opción.')}
+        className={`card-hover p-6 cursor-not-allowed group ${delayClass} bg-danger-50 border border-danger-200 opacity-80`}
+      >
+        <div className={`flex items-center justify-center w-14 h-14 bg-danger-100 rounded-full mb-4`}>
+          <div className="text-danger-500">
+            {icon}
+          </div>
+        </div>
+        <h3 className="text-lg font-semibold text-danger-900 mb-1">{title}</h3>
+        <p className="text-danger-600 text-sm leading-relaxed">{desc}</p>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className={`card-hover p-6 cursor-pointer group ${delayClass}`}
+    >
+      <div className={`flex items-center justify-center w-14 h-14 ${baseColorClass} rounded-full mb-4 group-hover:scale-105 transition-transform duration-300`}>
+        {icon}
+      </div>
+      <h3 className="text-lg font-semibold text-warm-900 mb-1">{title}</h3>
+      <p className="text-warm-500 text-sm leading-relaxed">{desc}</p>
+    </Link>
+  );
+};
