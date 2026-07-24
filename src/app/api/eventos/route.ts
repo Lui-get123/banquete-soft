@@ -29,7 +29,7 @@ async function postEventoHandler(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
     const userRole = request.headers.get('x-user-role');
-    const { nombre } = await request.json();
+    const { nombre, precio_boleta } = await request.json();
 
     if (!nombre) {
       return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
@@ -37,7 +37,11 @@ async function postEventoHandler(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('eventos')
-      .insert([{ nombre, cliente_id: parseInt(userId || '0') }])
+      .insert([{ 
+        nombre, 
+        cliente_id: parseInt(userId || '0'),
+        precio_boleta: parseFloat(precio_boleta) || 0
+      }])
       .select()
       .single();
 
@@ -49,5 +53,35 @@ async function postEventoHandler(request: NextRequest) {
   }
 }
 
+async function putEventoHandler(request: NextRequest) {
+  try {
+    const userId = request.headers.get('x-user-id');
+    const userRole = request.headers.get('x-user-role');
+    const { id, nombre, precio_boleta } = await request.json();
+
+    if (!id || !nombre) {
+      return NextResponse.json({ error: 'Faltan datos obligatorios' }, { status: 400 });
+    }
+
+    let query = supabase.from('eventos').update({ 
+      nombre, 
+      precio_boleta: parseFloat(precio_boleta) || 0 
+    }).eq('id', id);
+
+    if (userRole !== 'superadmin') {
+      query = query.eq('cliente_id', parseInt(userId || '0'));
+    }
+
+    const { data, error } = await query.select().single();
+
+    if (error) throw error;
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error updating evento:', error);
+    return NextResponse.json({ error: 'Error al actualizar evento' }, { status: 500 });
+  }
+}
+
 export const GET = withAuth(getEventosHandler);
 export const POST = withAuth(postEventoHandler);
+export const PUT = withAuth(putEventoHandler);
