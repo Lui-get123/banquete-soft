@@ -42,7 +42,7 @@ export default function AsistentesPage() {
       const response = await apiFetch('/api/asistentes');
       if (!response.ok) {
         if (response.status === 401) {
-          router.push('/login');
+          window.location.href = '/login';
           return;
         }
         throw new Error('Error in request');

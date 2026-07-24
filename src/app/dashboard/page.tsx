@@ -19,14 +19,14 @@ export default function DashboardPage() {
     const userData = localStorage.getItem('user');
     
     if (!token || !userData) {
-      router.push('/login');
+      window.location.href = '/login';
       return;
     }
 
     const parsedUser = JSON.parse(userData);
 
     if (parsedUser.role === 'superadmin') {
-      router.push('/superadmin');
+      window.location.href = '/superadmin';
       return;
     }
 
@@ -92,7 +92,7 @@ export default function DashboardPage() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   if (!user) {

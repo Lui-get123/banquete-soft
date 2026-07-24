@@ -22,7 +22,7 @@ export default function EstadisticasPage() {
         const data = await res.json();
         setAsistentes(data);
       } else if (res.status === 401) {
-        router.push('/login');
+        window.location.href = '/login';
       }
     } catch (e) {
       console.error(e);

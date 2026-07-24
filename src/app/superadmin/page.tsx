@@ -15,13 +15,13 @@ export default function SuperAdminPage() {
     const userData = localStorage.getItem('user');
     
     if (!token || !userData) {
-      router.push('/login');
+      window.location.href = '/login';
       return;
     }
 
     const parsedUser = JSON.parse(userData);
     if (parsedUser.role !== 'superadmin') {
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
       return;
     }
 
@@ -65,7 +65,7 @@ export default function SuperAdminPage() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   if (!user || loading) return null;
