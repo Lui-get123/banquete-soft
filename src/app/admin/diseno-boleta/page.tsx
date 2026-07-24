@@ -18,7 +18,8 @@ export default function DisenoBoletaPage() {
     qr_size: 0.18,
     name_x: 0.79,
     name_y: 0.28,
-    name_color: '#5B2333'
+    name_color: '#5B2333',
+    name_size: 0.025
   });
 
   const [previewUrl, setPreviewUrl] = useState('');
@@ -59,7 +60,7 @@ export default function DisenoBoletaPage() {
     setGeneratingPreview(true);
     try {
       const mockAsistente = {
-        nombre: 'JUAN PEREZ (MUESTRA)',
+        nombre: 'JUAN PEREZ',
         qr_token: 'PREVIEW12345'
       };
       const url = await generarImagenBoleta(mockAsistente, config);
@@ -197,6 +198,13 @@ export default function DisenoBoletaPage() {
                   <input type="range" min="0" max="1" step="0.01" value={config.name_y} onChange={e => handleSliderChange('name_y', parseFloat(e.target.value))} className="w-full accent-primary-600" />
                 </div>
                 <div>
+                  <label className="flex justify-between text-sm text-warm-700">
+                    <span>Tamaño del Texto</span>
+                    <span className="font-mono bg-warm-100 px-2 rounded">{Math.round((config.name_size || 0.025) * 1000)}</span>
+                  </label>
+                  <input type="range" min="0.01" max="0.1" step="0.002" value={config.name_size || 0.025} onChange={e => handleSliderChange('name_size', parseFloat(e.target.value))} className="w-full accent-primary-600" />
+                </div>
+                <div>
                   <label className="block text-sm text-warm-700 mb-2">Color del Texto</label>
                   <div className="flex items-center gap-3">
                     <input type="color" value={config.name_color} onChange={e => setConfig({ ...config, name_color: e.target.value })} className="w-10 h-10 rounded cursor-pointer border-0 p-0" />
@@ -215,7 +223,8 @@ export default function DisenoBoletaPage() {
                   qr_size: 0.18,
                   name_x: 0.79,
                   name_y: 0.28,
-                  name_color: '#5B2333'
+                  name_color: '#5B2333',
+                  name_size: 0.025
                 });
               }}
               className="w-full py-2 bg-warm-100 text-warm-700 rounded-xl hover:bg-warm-200 transition text-sm font-semibold mt-4"

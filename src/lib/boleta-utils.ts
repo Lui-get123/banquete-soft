@@ -8,6 +8,7 @@ export interface BoletaConfig {
   name_x: number; // percentage 0 to 1
   name_y: number; // percentage 0 to 1
   name_color: string;
+  name_size: number; // percentage of width (e.g. 0.025)
 }
 
 export const generarImagenBoleta = async (asistente: any, previewConfig?: BoletaConfig | null): Promise<string> => {
@@ -36,7 +37,8 @@ export const generarImagenBoleta = async (asistente: any, previewConfig?: Boleta
     qr_size: 0.18,
     name_x: 0.79, // centro del QR (0.7 + 0.18/2)
     name_y: 0.28,
-    name_color: '#5B2333'
+    name_color: '#5B2333',
+    name_size: 0.025
   };
 
   const finalConfig = config || defaultConfig;
@@ -91,7 +93,8 @@ export const generarImagenBoleta = async (asistente: any, previewConfig?: Boleta
   ctx.drawImage(qrImg, qrXPx, qrYPx, qrSizePx, qrSizePx);
 
   // 4. Dibujar Nombre
-  const fontSize = Math.max(13, Math.round(canvas.width * 0.025));
+  // fontSize uses name_size percentage. We ensure a minimum of 13px for readability.
+  const fontSize = Math.max(13, Math.round(canvas.width * (finalConfig.name_size || 0.025)));
   ctx.textAlign = 'center';
   
   const textCenterX = Math.round(canvas.width * finalConfig.name_x);
