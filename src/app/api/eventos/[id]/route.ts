@@ -1,20 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { withAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function DELETE(
+async function deleteEventoHandler(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const { id } = params;
+    const userId = request.headers.get('x-user-id');
+    const userRole = request.headers.get('x-user-role');
 
     if (!id || isNaN(Number(id))) {
       return NextResponse.json({ error: 'ID de evento inválido' }, { status: 400 });
     }
 
     const eventoId = parseInt(id);
+
+    // Verify ownership
+    if (userRole !== 'superadmin') {
+      const { data: ev, error: evError } = await supabase.from('eventos').select('cliente_id').eq('id', eventoId).single();
+      if (evError || !ev || ev.cliente_id !== parseInt(userId || '0')) {
+        return NextResponse.json({ error: 'No autorizado para eliminar este evento' }, { status: 403 });
+      }
+    }
 
     // 1. Eliminar asistentes asociados
     const { error: errorAsistentes } = await supabase
@@ -54,3 +65,5 @@ export async function DELETE(
     return NextResponse.json({ error: 'Error al eliminar el evento' }, { status: 500 });
   }
 }
+
+export const DELETE = withAuth(deleteEventoHandler);
