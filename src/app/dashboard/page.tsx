@@ -23,8 +23,18 @@ export default function DashboardPage() {
       return;
     }
 
-    setUser(JSON.parse(userData));
-    cargarEventos();
+    const parsedUser = JSON.parse(userData);
+
+    if (parsedUser.role === 'superadmin') {
+      router.push('/superadmin');
+      return;
+    }
+
+    setUser(parsedUser);
+    
+    if (parsedUser.status === 'active') {
+      cargarEventos();
+    }
   }, [router]);
 
   const cargarEventos = async () => {
@@ -84,6 +94,27 @@ export default function DashboardPage() {
 
   if (!user) {
     return null;
+  }
+
+  if (user.status === 'pending') {
+    return (
+      <div className="min-h-screen bg-warm-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md text-center">
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-display font-bold text-warm-900 mb-2">Cuenta Pendiente</h2>
+          <p className="text-warm-600 mb-6">
+            Tu cuenta aún no ha sido aprobada. Un administrador está revisando tu solicitud. Por favor, intenta iniciar sesión más tarde.
+          </p>
+          <button onClick={handleLogout} className="inline-block w-full bg-warm-200 text-warm-800 font-bold py-3 rounded-xl hover:bg-warm-300 transition-colors">
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

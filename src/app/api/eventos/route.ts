@@ -6,10 +6,16 @@ export const dynamic = 'force-dynamic';
 
 async function getEventosHandler(request: NextRequest) {
   try {
-    const { data, error } = await supabase
-      .from('eventos')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const userId = request.headers.get('x-user-id');
+    const userRole = request.headers.get('x-user-role');
+
+    let query = supabase.from('eventos').select('*').order('created_at', { ascending: false });
+
+    if (userRole !== 'superadmin') {
+      query = query.eq('cliente_id', parseInt(userId || '0'));
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return NextResponse.json(data);
@@ -21,14 +27,17 @@ async function getEventosHandler(request: NextRequest) {
 
 async function postEventoHandler(request: NextRequest) {
   try {
+    const userId = request.headers.get('x-user-id');
+    const userRole = request.headers.get('x-user-role');
     const { nombre } = await request.json();
+
     if (!nombre) {
       return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('eventos')
-      .insert([{ nombre }])
+      .insert([{ nombre, cliente_id: parseInt(userId || '0') }])
       .select()
       .single();
 

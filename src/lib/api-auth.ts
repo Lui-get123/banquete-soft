@@ -18,6 +18,10 @@ export function withAuth(handler: ApiHandler): ApiHandler {
         return NextResponse.json({ error: 'Token inválido o expirado.' }, { status: 401 });
       }
 
+      if (user.role === 'cliente' && user.status === 'pending') {
+        return NextResponse.json({ error: 'Cuenta pendiente de aprobación.' }, { status: 403 });
+      }
+
       req.headers.set('x-user-id', user.id.toString());
       req.headers.set('x-user-role', user.role);
 

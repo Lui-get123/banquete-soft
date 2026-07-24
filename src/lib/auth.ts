@@ -8,6 +8,7 @@ export interface User {
   id: number;
   username: string;
   role: string;
+  status: string;
 }
 
 export async function login(username: string, password: string): Promise<{ user: User; token: string } | null> {
@@ -27,13 +28,13 @@ export async function login(username: string, password: string): Promise<{ user:
   }
 
   const token = jwt.sign(
-    { id: user.id, username: user.username, role: user.role },
+    { id: user.id, username: user.username, role: user.role, status: user.status },
     JWT_SECRET,
     { expiresIn: '24h' }
   );
 
   return {
-    user: { id: user.id, username: user.username, role: user.role },
+    user: { id: user.id, username: user.username, role: user.role, status: user.status },
     token,
   };
 }
