@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatCurrency } from '@/lib/utils';
 import { apiFetch } from '@/lib/api';
@@ -25,6 +25,25 @@ export default function RegistroPage() {
   const [boletasImagenes, setBoletasImagenes] = useState<string[]>([]);
   const [enviandoCorreo, setEnviandoCorreo] = useState(false);
   const [correoExito, setCorreoExito] = useState(false);
+  const [eventoPrecio, setEventoPrecio] = useState(0);
+
+  useEffect(() => {
+    const fetchPrecio = async () => {
+      const eid = localStorage.getItem('evento_id');
+      if (eid) {
+        try {
+          const res = await fetch(`/api/public/eventos/${eid}`);
+          const data = await res.json();
+          if (res.ok) {
+            setEventoPrecio(data.precio_boleta || 0);
+          }
+        } catch (e) {
+          console.error('Error fetching precio', e);
+        }
+      }
+    };
+    fetchPrecio();
+  }, []);
 
   const handleNumBoletasChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value);
@@ -33,7 +52,7 @@ export default function RegistroPage() {
     if (!isNaN(val) && val > 0 && val <= 50) { 
       const newBoletas = [...boletas];
       while (newBoletas.length < val) {
-        newBoletas.push({ nombre: '', documento: '', monto: 60000 });
+        newBoletas.push({ nombre: '', documento: '', monto: eventoPrecio });
       }
       if (newBoletas.length > val) {
         newBoletas.length = val;
