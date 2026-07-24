@@ -242,14 +242,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {eventoActivo && !editandoEvento && (
+            {eventoActivo && (
               <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => setEditandoEvento(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-semibold py-2 rounded-xl transition-colors border border-warm-200"
-                >
-                  Configurar Precio
-                </button>
+
                 <button
                   onClick={() => {
                     const url = `${window.location.origin}/e/${eventoActivo}`;
@@ -267,31 +262,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {editandoEvento && (
-              <div className="mt-4 p-3 bg-warm-50 rounded-xl border border-warm-200">
-                <label className="block text-xs font-bold text-warm-700 mb-1">Renombrar Evento</label>
-                <input 
-                  type="text" 
-                  className="input-field text-sm mb-2" 
-                  value={eventoEditNombre}
-                  onChange={e => setEventoEditNombre(e.target.value)}
-                />
-                <label className="block text-xs font-bold text-warm-700 mb-1">Precio Boleta</label>
-                <div className="relative mb-3">
-                  <span className="absolute left-3 top-2.5 text-warm-500 text-sm">$</span>
-                  <input 
-                    type="number" 
-                    className="input-field text-sm pl-7" 
-                    value={eventoEditPrecio}
-                    onChange={e => setEventoEditPrecio(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={handleGuardarEdicion} className="btn-primary text-sm py-1.5 flex-1">Guardar</button>
-                  <button onClick={() => setEditandoEvento(false)} className="bg-warm-200 text-warm-700 text-sm py-1.5 rounded-xl font-bold flex-1 hover:bg-warm-300">Cancelar</button>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
 
