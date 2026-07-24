@@ -103,9 +103,10 @@ export const generarImagenBoleta = async (asistente: any, previewConfig?: Boleta
   ctx.fillStyle = finalConfig.name_color; 
   ctx.font = `bold ${fontSize}px Georgia, serif`;
 
-  const displayName = asistente.nombre.length > 22
-    ? asistente.nombre.substring(0, 20) + '...'
-    : asistente.nombre;
+  const rawName = (asistente.nombre || '').trim();
+  const displayName = rawName.length > 22
+    ? rawName.substring(0, 20) + '...'
+    : rawName;
     
   ctx.fillText(displayName, textCenterX, textCenterY);
 
