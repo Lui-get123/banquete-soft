@@ -264,7 +264,7 @@ export default function DashboardPage() {
       {/* Footer */}
       <footer className="py-6 text-center">
         <p className="text-warm-400 text-sm">
-          Banquete Pro Construcción © 2026
+          BanqueteSoft © {new Date().getFullYear()}
         </p>
       </footer>
     </div>

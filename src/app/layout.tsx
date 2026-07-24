@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Sistema de Gestión de Acceso - Banquete",
-  description: "Sistema de control de acceso y pagos para eventos — Banquete Pro Construcción",
+  title: "BanqueteSoft",
+  description: "Sistema de control de acceso y pagos para eventos — BanqueteSoft",
 };
 
 export default function RootLayout({

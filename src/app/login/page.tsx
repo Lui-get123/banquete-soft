@@ -128,22 +128,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="mt-6 mb-4 flex items-center gap-3">
-            <div className="flex-1 h-px bg-warm-200" />
-            <span className="text-xs text-warm-400 uppercase tracking-widest">Credenciales</span>
-            <div className="flex-1 h-px bg-warm-200" />
-          </div>
 
-          {/* Default credentials hint */}
-          <div className="text-center text-sm text-warm-400 space-y-0.5">
-            <p>
-              Usuario por defecto: <strong className="text-warm-600 font-medium">admin</strong>
-            </p>
-            <p>
-              Contraseña por defecto: <strong className="text-warm-600 font-medium">admin123</strong>
-            </p>
-          </div>
         </div>
 
         {/* Footer accent */}
