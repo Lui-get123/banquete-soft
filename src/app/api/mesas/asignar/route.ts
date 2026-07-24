@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { withAuth } from '@/lib/api-auth';
+import { withAuth, checkEventOwnership } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +8,9 @@ async function patchAsignar(request: NextRequest) {
   try {
     const eventoId = request.headers.get('x-evento-id');
     if (!eventoId) return NextResponse.json({ error: 'Falta evento_id' }, { status: 400 });
+
+    const isOwner = await checkEventOwnership(request, eventoId);
+    if (!isOwner) return NextResponse.json({ error: 'No autorizado para este evento' }, { status: 403 });
 
     const body = await request.json();
     const { asistente_id, mesa, silla } = body;

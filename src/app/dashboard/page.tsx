@@ -50,6 +50,9 @@ export default function DashboardPage() {
         } else if (data.length > 0) {
           setEventoActivo(data[0].id.toString());
           localStorage.setItem('evento_id', data[0].id.toString());
+        } else {
+          setEventoActivo('');
+          localStorage.removeItem('evento_id');
         }
       }
     } catch (error) {

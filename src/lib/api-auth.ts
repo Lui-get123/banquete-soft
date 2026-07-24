@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from './auth';
+import { supabase } from './supabase';
 
 type ApiHandler = (req: NextRequest, ...args: any[]) => Promise<NextResponse>;
 
@@ -31,4 +32,27 @@ export function withAuth(handler: ApiHandler): ApiHandler {
       return NextResponse.json({ error: 'Error de autenticación interna.' }, { status: 500 });
     }
   };
+}
+
+export async function checkEventOwnership(req: NextRequest, eventoId: string | number): Promise<boolean> {
+  try {
+    const userId = req.headers.get('x-user-id');
+    const userRole = req.headers.get('x-user-role');
+    
+    if (userRole === 'superadmin') return true;
+    if (!userId || !eventoId) return false;
+
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('cliente_id')
+      .eq('id', parseInt(eventoId.toString()))
+      .single();
+
+    if (error || !data) return false;
+    
+    return data.cliente_id === parseInt(userId);
+  } catch (error) {
+    console.error('Error in checkEventOwnership:', error);
+    return false;
+  }
 }
