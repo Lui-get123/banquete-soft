@@ -430,8 +430,8 @@ export default function AsistentesPage() {
         {/* Filters */}
         <div className="card mb-6 animate-fadeInUp-delay-2">
           <h3 className="text-lg font-display font-semibold text-warm-900 mb-4">Filtros</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-2">
               <label className="label-field">Estado</label>
               <select
                 value={filters.estado}
@@ -444,7 +444,7 @@ export default function AsistentesPage() {
               </select>
             </div>
 
-            <div>
+            <div className="lg:col-span-3">
               <label className="label-field">Método de Pago</label>
               <select
                 value={filters.metodo_pago}
@@ -457,7 +457,7 @@ export default function AsistentesPage() {
               </select>
             </div>
 
-            <div>
+            <div className="lg:col-span-3">
               <label className="label-field">Buscar</label>
               <input
                 type="text"
@@ -468,22 +468,25 @@ export default function AsistentesPage() {
               />
             </div>
 
-            <div className="flex items-end space-x-2">
+            <div className="lg:col-span-4 flex items-end space-x-2">
               <button
                 onClick={handleExportExcel}
-                className="flex-1 btn-success"
+                className="flex-1 btn-success whitespace-nowrap px-2"
+                title="Exportar a Excel"
               >
                 Exportar Excel
               </button>
               <button
                 onClick={handleExportPDF}
-                className="flex-1 btn-accent"
+                className="flex-1 btn-accent whitespace-nowrap px-2"
+                title="Exportar a PDF"
               >
                 Exportar PDF
               </button>
               <button
                 onClick={() => setIsBulkModalOpen(true)}
-                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-colors"
+                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-2 rounded-lg shadow-sm transition-colors whitespace-nowrap"
+                title="Importar Excel"
               >
                 Importar Excel
               </button>
