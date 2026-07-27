@@ -9,6 +9,7 @@ import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { apiFetch } from '@/lib/api';
 import { generarImagenBoleta } from '@/lib/boleta-utils';
+import BulkImportModal from './components/BulkImportModal';
 
 export default function AsistentesPage() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function AsistentesPage() {
     metodo_pago: '',
     search: '',
   });
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
   useEffect(() => {
     fetchAsistentes();
@@ -479,6 +481,12 @@ export default function AsistentesPage() {
               >
                 Exportar PDF
               </button>
+              <button
+                onClick={() => setIsBulkModalOpen(true)}
+                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-colors"
+              >
+                Importar Excel
+              </button>
             </div>
           </div>
         </div>
@@ -551,6 +559,12 @@ export default function AsistentesPage() {
           )}
         </div>
       </div>
+
+      <BulkImportModal 
+        isOpen={isBulkModalOpen} 
+        onClose={() => setIsBulkModalOpen(false)} 
+        onSuccess={() => fetchAsistentes()} 
+      />
     </div>
   );
 }
