@@ -43,12 +43,15 @@ async function postBulkAsistentes(request: NextRequest) {
       .insert(toInsert)
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error inserting bulk:', error);
+      return NextResponse.json({ error: error.message || 'Error en la base de datos al insertar' }, { status: 400 });
+    }
 
     return NextResponse.json(newAsistentes, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating bulk asistentes:', error);
-    return NextResponse.json({ error: 'Error al importar asistentes masivamente' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Error al importar asistentes masivamente' }, { status: 500 });
   }
 }
 

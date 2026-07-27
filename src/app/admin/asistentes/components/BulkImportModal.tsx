@@ -147,7 +147,8 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
       });
 
       if (!res.ok) {
-        throw new Error('Error en el servidor al guardar asistentes');
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error en el servidor al guardar asistentes');
       }
 
       const creados = await res.json();
@@ -181,9 +182,9 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
       resetState();
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Ocurrió un error en la importación.');
+      alert(err.message || 'Ocurrió un error en la importación.');
       setIsProcessing(false);
       setProgressText('');
     }
