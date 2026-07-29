@@ -35,22 +35,6 @@ async function deleteEventoHandler(
       
     if (errorAsistentes) throw errorAsistentes;
 
-    // 2. Eliminar mesas asociadas (si existen)
-    const { error: errorMesas } = await supabase
-      .from('mesas')
-      .delete()
-      .eq('evento_id', eventoId);
-
-    if (errorMesas) throw errorMesas;
-
-    // 3. Eliminar configuraciones de boleta asociadas (si existen)
-    const { error: errorBoletaConfig } = await supabase
-      .from('boleta_config')
-      .delete()
-      .eq('evento_id', eventoId);
-      
-    if (errorBoletaConfig) throw errorBoletaConfig;
-
     // 4. Finalmente, eliminar el evento
     const { error: errorEvento } = await supabase
       .from('eventos')
