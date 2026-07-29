@@ -60,7 +60,7 @@ export default function LoginPage() {
 
           {/* Icon circle / Logo */}
           <div className="flex items-center justify-center mb-5">
-            <img src="/logo.jpg" alt="BanqueteSoft Logo" className="w-16 h-16 object-contain mix-blend-multiply" />
+            <img src="/logo.png" alt="BanqueteSoft Logo" className="w-16 h-16 object-contain drop-shadow-md" />
           </div>
 
           <h1 className="text-3xl font-display font-bold text-primary-800 tracking-tight">
