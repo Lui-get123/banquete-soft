@@ -18,6 +18,7 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
   }
 
   const response = await fetch(url, {
+    cache: 'no-store', // Previene el cacheo agresivo en Next.js App Router
     ...options,
     headers,
   });
