@@ -170,7 +170,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+              <img src="/logo.png" alt="Logo" className="w-12 h-12 object-contain drop-shadow-sm" />
               <h1 className="text-xl font-display font-bold text-primary-700 tracking-tight">
                 Eventix
               </h1>

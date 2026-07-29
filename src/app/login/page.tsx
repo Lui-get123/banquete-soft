@@ -59,8 +59,8 @@ export default function LoginPage() {
           </div>
 
           {/* Icon circle / Logo */}
-          <div className="flex items-center justify-center mb-5">
-            <img src="/logo.png" alt="Eventix Logo" className="w-16 h-16 object-contain drop-shadow-md" />
+          <div className="w-24 h-24 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6 mx-auto overflow-hidden">
+            <img src="/logo.png" alt="Eventix Logo" className="w-24 h-24 object-contain drop-shadow-md" />
           </div>
 
           <h1 className="text-3xl font-display font-bold text-primary-800 tracking-tight">
