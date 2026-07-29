@@ -169,7 +169,8 @@ export default function DashboardPage() {
       <nav className="nav-bar">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
               <h1 className="text-xl font-display font-bold text-primary-700 tracking-tight">
                 Sistema de Acceso
               </h1>
@@ -190,84 +191,22 @@ export default function DashboardPage() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
-        {/* Welcome & Event Selection */}
-        <div className="mb-10 animate-fadeInUp flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h2 className="text-3xl font-display font-bold text-warm-900 tracking-tight">
-              Panel Principal
-            </h2>
-            <div className="bg-accent-500 h-1 w-16 rounded-full mt-3 mb-3" />
-            <p className="text-warm-500">Seleccione una opción para comenzar</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-warm-200 w-full md:w-auto min-w-[300px]">
-            <label className="block text-sm font-bold text-primary-700 mb-2">Evento Activo</label>
-            <select 
-              className="input-field mb-3 bg-warm-50"
-              value={eventoActivo}
-              onChange={handleCambiarEvento}
-            >
-              {eventos.map(e => (
-                <option key={e.id} value={e.id}>{e.nombre}</option>
-              ))}
-            </select>
-            
-            <div className="flex flex-col gap-2 mb-3">
-              <input 
-                type="text" 
-                className="input-field text-sm" 
-                placeholder="Nuevo evento..."
-                value={nuevoEventoNombre}
-                onChange={e => setNuevoEventoNombre(e.target.value)}
-              />
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-2.5 text-warm-500 text-sm">$</span>
-                  <input 
-                    type="number" 
-                    className="input-field text-sm pl-7" 
-                    placeholder="Precio boleta (0 = Gratis)"
-                    value={nuevoEventoPrecio}
-                    onChange={e => setNuevoEventoPrecio(e.target.value)}
-                  />
-                </div>
-                <button 
-                  onClick={handleCrearEvento}
-                  disabled={creandoEvento || !nuevoEventoNombre.trim()}
-                  className="btn-primary text-sm whitespace-nowrap px-3 py-2 disabled:opacity-50"
-                >
-                  Crear
-                </button>
-              </div>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+        
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* Left Column - Titles and Cards */}
+          <div className="flex-1">
+            <div className="mb-8 animate-fadeInUp">
+              <h2 className="text-3xl font-display font-bold text-warm-900 tracking-tight">
+                Panel Principal
+              </h2>
+              <div className="bg-accent-500 h-1 w-16 rounded-full mt-3 mb-3" />
+              <p className="text-warm-500">Seleccione una opción para comenzar</p>
             </div>
 
-            {eventoActivo && (
-              <div className="flex gap-2 mt-3">
-
-                <button
-                  onClick={() => {
-                    const url = `${window.location.origin}/e/${eventoActivo}`;
-                    navigator.clipboard.writeText(url);
-                    alert('¡Enlace de invitación copiado al portapapeles!');
-                  }}
-                  className="w-full flex items-center justify-center gap-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-semibold py-2 rounded-xl transition-colors border border-warm-200"
-                  title="Copiar Enlace de Invitación"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                  Copiar Enlace
-                </button>
-              </div>
-            )}
-
-
-          </div>
-        </div>
-
-        {/* Dashboard Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Dashboard Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           <DashboardCard
             href="/registro"
             title="Registrar Pago"
@@ -385,9 +324,72 @@ export default function DashboardPage() {
               <svg className="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            }
-          />
+            />
+            </div>
+          </div>
+
+          {/* Right Column - Event Form */}
+          <div className="w-full lg:w-80 shrink-0 animate-fadeInUp">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-warm-200 sticky top-6">
+              <label className="block text-sm font-bold text-primary-700 mb-2">Evento Activo</label>
+              <select 
+                className="input-field mb-4 bg-warm-50 text-sm"
+                value={eventoActivo}
+                onChange={handleCambiarEvento}
+              >
+                {eventos.map(e => (
+                  <option key={e.id} value={e.id}>{e.nombre}</option>
+                ))}
+              </select>
+              
+              <div className="flex flex-col gap-3 mb-4">
+                <input 
+                  type="text" 
+                  className="input-field text-sm" 
+                  placeholder="Nombre de nuevo evento..."
+                  value={nuevoEventoNombre}
+                  onChange={e => setNuevoEventoNombre(e.target.value)}
+                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-warm-500 text-sm">$</span>
+                  <input 
+                    type="number" 
+                    className="input-field text-sm pl-7" 
+                    placeholder="Precio boleta (0 = Gratis)"
+                    value={nuevoEventoPrecio}
+                    onChange={e => setNuevoEventoPrecio(e.target.value)}
+                  />
+                </div>
+                <button 
+                  onClick={handleCrearEvento}
+                  disabled={creandoEvento || !nuevoEventoNombre.trim()}
+                  className="btn-primary w-full text-sm font-bold px-4 py-2.5 disabled:opacity-50"
+                >
+                  Crear Evento
+                </button>
+              </div>
+
+              {eventoActivo && (
+                <div className="mt-5 pt-5 border-t border-warm-100">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/e/${eventoActivo}`;
+                      navigator.clipboard.writeText(url);
+                      alert('¡Enlace de invitación copiado al portapapeles!');
+                    }}
+                    className="w-full flex items-center justify-center gap-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-semibold py-2.5 rounded-xl transition-colors border border-warm-200"
+                    title="Copiar Enlace de Invitación"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    Copiar Enlace de Registro Público
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
       </main>
 
