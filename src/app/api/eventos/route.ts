@@ -18,7 +18,13 @@ async function getEventosHandler(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) throw error;
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error) {
     console.error('Error fetching eventos:', error);
     return NextResponse.json({ error: 'Error al obtener eventos' }, { status: 500 });
