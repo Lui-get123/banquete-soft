@@ -28,6 +28,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 });
     }
 
+    // Obtener el whatsapp_contacto del organizador
+    let whatsappContacto = null;
+    if (evento.cliente_id) {
+      const { data: owner } = await supabase
+        .from('users')
+        .select('whatsapp_contacto')
+        .eq('id', evento.cliente_id)
+        .single();
+      
+      whatsappContacto = owner?.whatsapp_contacto;
+    }
+
+    const requiresPayment = evento.precio_boleta > 0 && whatsappContacto;
+    const initialStatus = requiresPayment ? 'pendiente_pago' : 'no_presente';
+
     // Preparar el array para insertar
     const fecha_pago = new Date().toISOString();
     const toInsert = asistentes.map((b: any) => ({
@@ -35,11 +50,11 @@ export async function POST(request: NextRequest) {
       documento: b.documento,
       telefono,
       email,
-      metodo_pago: 'Auto-Registro',
+      metodo_pago: requiresPayment ? 'WhatsApp' : 'Auto-Registro',
       monto: evento.precio_boleta || 0,
       fecha_pago,
       qr_token: generateQRToken(),
-      estado: 'no_presente',
+      estado: initialStatus,
       evento_id: parseInt(evento_id)
     }));
 
@@ -50,7 +65,14 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, asistentes: newAsistentes }, { status: 201 });
+    return NextResponse.json({ 
+      success: true, 
+      asistentes: newAsistentes,
+      requiresPayment,
+      whatsappContacto,
+      precioTotal: (evento.precio_boleta || 0) * asistentes.length,
+      eventoNombre: evento.nombre
+    }, { status: 201 });
   } catch (error) {
     console.error('Error in public registration:', error);
     return NextResponse.json({ error: 'Error al procesar el registro' }, { status: 500 });

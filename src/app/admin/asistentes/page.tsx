@@ -111,6 +111,32 @@ export default function AsistentesPage() {
     }
   };
 
+  const handleAprobarPago = async (asistente: any) => {
+    if (!confirm(`¿Confirmas que recibiste el pago de ${asistente.nombre} y deseas enviarle su boleta?`)) return;
+
+    try {
+      alert('Aprobando pago, generando boleta y enviando correo... Por favor espera.');
+      const boletaBase64 = await generarImagenBoleta(asistente);
+
+      const response = await apiFetch(`/api/asistentes/${asistente.id}/aprobar`, {
+        method: 'POST',
+        body: JSON.stringify({
+          boletasBase64: [boletaBase64]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al aprobar pago');
+      }
+
+      alert('Pago aprobado y boleta enviada exitosamente.');
+      await fetchAsistentes();
+    } catch (error) {
+      console.error('Error approving pago:', error);
+      alert('Error al aprobar el pago. Inténtalo de nuevo.');
+    }
+  };
+
   const handleResendQR = async (asistente: any) => {
     const email = prompt('¿A qué correo deseas enviar la boleta?', asistente.email || '');
     if (!email) return;
@@ -525,19 +551,32 @@ export default function AsistentesPage() {
                       <span className={`stat-badge ${
                         asistente.estado === 'presente'
                           ? 'bg-success-100 text-success-700'
+                          : asistente.estado === 'pendiente_pago'
+                          ? 'bg-yellow-100 text-yellow-700'
                           : 'bg-warm-200 text-warm-600'
                       }`}>
-                        {asistente.estado === 'presente' ? 'Presente' : 'No Presente'}
+                        {asistente.estado === 'presente' ? 'Presente' : 
+                         asistente.estado === 'pendiente_pago' ? 'Pendiente' : 'No Presente'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-warm-600">{formatDate(asistente.fecha_pago)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3">
-                      <button
-                        onClick={() => handleResendQR(asistente)}
-                        className="text-primary-600 hover:text-primary-800 transition-colors hover:underline"
-                      >
-                        Reenviar QR
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3 items-center">
+                      {asistente.estado === 'pendiente_pago' && (
+                        <button
+                          onClick={() => handleAprobarPago(asistente)}
+                          className="bg-success-100 hover:bg-success-200 text-success-700 px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                        >
+                          Aprobar Pago
+                        </button>
+                      )}
+                      {asistente.estado !== 'pendiente_pago' && (
+                        <button
+                          onClick={() => handleResendQR(asistente)}
+                          className="text-primary-600 hover:text-primary-800 transition-colors hover:underline"
+                        >
+                          Reenviar QR
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(asistente.id)}
                         className="text-danger-500 hover:text-danger-700 transition-colors hover:underline"
