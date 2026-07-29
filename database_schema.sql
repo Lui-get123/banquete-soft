@@ -12,7 +12,6 @@ CREATE TABLE users (
   password TEXT NOT NULL,
   role TEXT DEFAULT 'admin',
   status TEXT DEFAULT 'pending',
-  mp_access_token TEXT, -- Token de MercadoPago del cliente
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -42,7 +41,6 @@ CREATE TABLE asistentes (
   estado TEXT DEFAULT 'no_presente', -- 'no_presente' o 'presente'
   hora_ingreso TIMESTAMP WITH TIME ZONE,
   qr_token TEXT UNIQUE NOT NULL,
-  payment_id TEXT, -- ID de transacción de MercadoPago
   evento_id BIGINT REFERENCES eventos(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
