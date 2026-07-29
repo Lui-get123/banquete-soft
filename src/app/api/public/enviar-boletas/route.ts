@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     });
 
     const mailOptions = {
-      from: `"BanqueteSoft" <${process.env.EMAIL_USER}>`,
+      from: `"Eventix" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: '¡Tus Boletas para el Evento!',
       text: customMessage || 'Adjuntamos las boletas que has generado. Por favor, preséntalas en la entrada del evento.',

@@ -333,7 +333,7 @@ export default function PublicEventRegistrationPage({
           {/* Footer de la tarjeta */}
           <div className="bg-warm-100/50 p-4 text-center border-t border-warm-100">
             <p className="text-xs text-warm-400 font-medium tracking-wide">
-              POWERED BY BANQUETESOFT
+              POWERED BY EVENTIX
             </p>
           </div>
         </div>

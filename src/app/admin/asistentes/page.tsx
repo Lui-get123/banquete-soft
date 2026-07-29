@@ -228,7 +228,7 @@ export default function AsistentesPage() {
     // Guardar
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, 'BanqueteSoft_Asistentes.xlsx');
+    saveAs(blob, 'Eventix_Asistentes.xlsx');
   };
 
   const handleExportPDF = () => {
@@ -311,7 +311,7 @@ export default function AsistentesPage() {
     });
 
     // Guardar Documento
-    doc.save('BanqueteSoft_Reporte_Asistentes.pdf');
+    doc.save('Eventix_Reporte_Asistentes.pdf');
   };
 
   const paymentTotal = stats.transferencia + stats.efectivo;

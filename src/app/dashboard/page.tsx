@@ -172,7 +172,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
               <h1 className="text-xl font-display font-bold text-primary-700 tracking-tight">
-                Sistema de Acceso
+                Eventix
               </h1>
             </div>
             <div className="flex items-center space-x-4">
@@ -398,7 +398,7 @@ export default function DashboardPage() {
       {/* Footer */}
       <footer className="py-6 text-center">
         <p className="text-warm-400 text-sm">
-          BanqueteSoft © {new Date().getFullYear()}
+          Eventix © {new Date().getFullYear()}
         </p>
       </footer>
     </div>

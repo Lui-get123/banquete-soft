@@ -9,8 +9,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="BanqueteSoft Logo" className="w-10 h-10 object-contain drop-shadow-md" />
-              <span className="font-display font-bold text-xl text-warm-900">BanqueteSoft</span>
+              <img src="/logo.png" alt="Eventix Logo" className="w-10 h-10 object-contain drop-shadow-md" />
+              <span className="font-display font-bold text-xl text-warm-900">Eventix</span>
             </div>
             <div className="flex items-center gap-4">
               <Link href="/login" className="text-sm font-medium text-warm-600 hover:text-primary-600 transition-colors">
@@ -57,7 +57,7 @@ export default function LandingPage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-display font-bold text-warm-900">Por qué elegir BanqueteSoft</h2>
+            <h2 className="text-3xl font-display font-bold text-warm-900">Por qué elegir Eventix</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard 
@@ -81,7 +81,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-warm-900 py-12 text-center text-warm-400">
-        <p className="text-sm">© {new Date().getFullYear()} BanqueteSoft. Todos los derechos reservados.</p>
+        <p className="text-sm">© {new Date().getFullYear()} Eventix. Todos los derechos reservados.</p>
         <p className="text-xs mt-2">Plataforma administrada por SuperAdmin.</p>
       </footer>
     </div>

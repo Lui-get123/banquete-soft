@@ -104,7 +104,7 @@ export default function SuperAdminPage() {
             Gestión de Clientes (SaaS)
           </h2>
           <div className="bg-accent-500 h-1 w-16 rounded-full mt-3 mb-3" />
-          <p className="text-warm-500">Administra las cuentas de las empresas que usan BanqueteSoft.</p>
+          <p className="text-warm-500">Administra las cuentas de las empresas que usan Eventix.</p>
         </div>
 
         <div className="bg-white shadow-sm border border-warm-200 rounded-3xl overflow-hidden animate-fadeInUp-delay-1">

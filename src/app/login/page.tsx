@@ -60,14 +60,14 @@ export default function LoginPage() {
 
           {/* Icon circle / Logo */}
           <div className="flex items-center justify-center mb-5">
-            <img src="/logo.png" alt="BanqueteSoft Logo" className="w-16 h-16 object-contain drop-shadow-md" />
+            <img src="/logo.png" alt="Eventix Logo" className="w-16 h-16 object-contain drop-shadow-md" />
           </div>
 
           <h1 className="text-3xl font-display font-bold text-primary-800 tracking-tight">
-            Sistema de Acceso
+            Eventix
           </h1>
           <p className="text-warm-500 mt-2 text-sm tracking-wide">
-            Gestión de Banquetes y Eventos
+            Gestión y Control de Eventos
           </p>
         </div>
 

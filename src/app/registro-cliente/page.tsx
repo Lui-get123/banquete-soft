@@ -64,7 +64,7 @@ export default function RegistroClientePage() {
       <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-display font-bold text-warm-900 mb-2">Crear Cuenta</h1>
-          <p className="text-warm-500">Únete a BanqueteSoft para gestionar tus eventos</p>
+          <p className="text-warm-500">Únete a Eventix para gestionar tus eventos</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
