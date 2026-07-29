@@ -9,9 +9,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-600 to-primary-400 flex items-center justify-center shadow-lg">
-                <span className="text-white font-display font-bold text-xl">B</span>
-              </div>
+              <img src="/logo.svg" alt="BanqueteSoft Logo" className="w-10 h-10 drop-shadow-md" />
               <span className="font-display font-bold text-xl text-warm-900">BanqueteSoft</span>
             </div>
             <div className="flex items-center gap-4">
