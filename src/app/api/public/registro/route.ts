@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
           },
           auto_return: 'approved',
           notification_url: `${baseUrl}/api/webhooks/mercadopago?evento_id=${evento.id}`,
-          external_reference: paymentId,
+          external_reference: paymentId as string,
           statement_descriptor: 'BANQUETE_SOFT'
         }
       });
