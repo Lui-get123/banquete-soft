@@ -76,8 +76,15 @@ export default function PublicEventRegistrationPage({
       const regData = await regRes.json();
       if (!regRes.ok) throw new Error(regData.error || 'Error en el registro');
 
-      // 2. Generate Ticket Image
-      const asistente = regData[0];
+      // Si requiere pago, redirigir a MercadoPago
+      if (regData.init_point) {
+        window.location.href = regData.init_point;
+        return; // Detenemos la ejecución aquí
+      }
+
+      // 2. Generate Ticket Image (Solo para eventos gratuitos)
+      // Nota: Para eventos pagos, esto lo hace el webhook de MercadoPago
+      const asistente = regData.asistentes[0];
       const imagenBase64 = await generarImagenBoleta(asistente);
 
       // 3. Send Email
