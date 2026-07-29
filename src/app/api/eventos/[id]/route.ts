@@ -60,9 +60,9 @@ async function deleteEventoHandler(
     if (errorEvento) throw errorEvento;
 
     return NextResponse.json({ success: true, message: 'Evento eliminado correctamente' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting evento:', error);
-    return NextResponse.json({ error: 'Error al eliminar el evento' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Error al eliminar el evento' }, { status: 500 });
   }
 }
 

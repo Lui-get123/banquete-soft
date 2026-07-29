@@ -44,14 +44,15 @@ export default function EventosPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al eliminar evento');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Error al eliminar evento');
       }
 
       alert('Evento eliminado exitosamente.');
       await fetchEventosStats();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting evento:', error);
-      alert('Ocurrió un error al intentar eliminar el evento.');
+      alert(error.message || 'Ocurrió un error al intentar eliminar el evento.');
     }
   };
 
