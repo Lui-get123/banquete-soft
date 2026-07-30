@@ -87,13 +87,13 @@ async function aprobarPagoHandler(request: NextRequest, { params }: { params: { 
         to: asistente.email,
         subject: `¡Pago Aprobado! Tu boleta para ${asistente.eventos?.nombre}`,
         html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #4A4036; background-color: #FDFBF7; padding: 20px; border-radius: 12px; border: 1px solid #EBE4D8;">
-            <h1 style="color: #5B2333; text-align: center; border-bottom: 2px solid #EBE4D8; padding-bottom: 10px;">¡Pago Aprobado!</h1>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1F2937; background-color: #FFFFFF; padding: 20px; border-radius: 12px; border: 1px solid #E5E7EB;">
+            <h1 style="color: #047857; text-align: center; border-bottom: 2px solid #D1FAE5; padding-bottom: 10px;">¡Pago Aprobado!</h1>
             <p style="font-size: 16px;">Hola <strong>${asistente.nombre}</strong>,</p>
             <p style="font-size: 16px;">El organizador ha verificado tu pago exitosamente.</p>
-            <p style="font-size: 16px; background-color: #F5F0E8; padding: 15px; border-radius: 8px;">Adjunto a este correo encontrarás tu boleta oficial para <strong>${asistente.eventos?.nombre}</strong>. Por favor preséntala en la entrada (puedes mostrarla desde tu celular).</p>
+            <p style="font-size: 16px; background-color: #F0FDF4; padding: 15px; border-radius: 8px; border: 1px solid #D1FAE5;">Adjunto a este correo encontrarás tu boleta oficial para <strong>${asistente.eventos?.nombre}</strong>. Por favor preséntala en la entrada (puedes mostrarla desde tu celular).</p>
             <br/>
-            <p style="font-size: 16px; text-align: center; color: #8C7B68;">¡Te esperamos!</p>
+            <p style="font-size: 16px; text-align: center; color: #059669; font-weight: 600;">¡Te esperamos!</p>
           </div>
         `,
         attachments

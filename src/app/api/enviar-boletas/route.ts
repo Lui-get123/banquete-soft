@@ -66,15 +66,15 @@ async function postEnviarBoletas(request: NextRequest) {
       subject: '¡Tus Boletas para el Evento!',
       text: customMessage || 'Adjuntamos las boletas que has generado. Por favor, preséntalas en la entrada del evento.',
       html: `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #4A4036; background-color: #FDFBF7; padding: 20px; border-radius: 12px; border: 1px solid #EBE4D8;">
-          <h1 style="color: #5B2333; text-align: center; border-bottom: 2px solid #EBE4D8; padding-bottom: 10px;">¡Tus Boletas están Listas!</h1>
-          <p style="font-size: 16px;">Hola,</p>
-          <p style="font-size: 16px;">${customMessage || 'Gracias por tu registro. Adjunto a este correo encontrarás tus boletas para el evento.'}</p>
-          <p style="font-size: 16px; background-color: #F5F0E8; padding: 15px; border-radius: 8px;">Por favor, descarga las imágenes adjuntas o muestra este correo directamente en la entrada. Cada boleta contiene un código QR único que será escaneado.</p>
-          <br/>
-          <p style="font-size: 16px; text-align: center; color: #8C7B68;">¡Nos vemos pronto!</p>
-        </div>
-      `,
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1F2937; background-color: #FFFFFF; padding: 20px; border-radius: 12px; border: 1px solid #E5E7EB;">
+            <h1 style="color: #047857; text-align: center; border-bottom: 2px solid #D1FAE5; padding-bottom: 10px;">¡Tu Registro fue Exitoso!</h1>
+            <p style="font-size: 16px;">Hola,</p>
+            <p style="font-size: 16px;">${customMessage || 'Gracias por confirmar tu asistencia. Adjunto a este correo encontrarás tus boletas para el evento.'}</p>
+            <p style="font-size: 16px; background-color: #F0FDF4; padding: 15px; border-radius: 8px; border: 1px solid #D1FAE5;">Por favor, descarga las imágenes adjuntas o muestra este correo directamente en la entrada. Cada boleta contiene un código QR único que será escaneado.</p>
+            <br/>
+            <p style="font-size: 16px; text-align: center; color: #059669; font-weight: 600;">¡Nos vemos pronto!</p>
+          </div>
+        `,
       attachments,
     };
 
