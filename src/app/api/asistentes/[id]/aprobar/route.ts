@@ -43,15 +43,33 @@ async function aprobarPagoHandler(request: NextRequest, { params }: { params: { 
 
     // Si pasaron la imagen base64, enviamos el correo
     if (boletasBase64 && boletasBase64.length > 0 && asistente.email) {
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        throw new Error('El servidor no tiene configuradas las credenciales de correo');
+      // Buscar credenciales de correo del cliente dueño del evento
+      let emailUser: string | null = null;
+      let emailPass: string | null = null;
+
+      if (asistente.eventos?.cliente_id) {
+        const { data: clienteData } = await supabase
+          .from('users')
+          .select('email_user, email_pass')
+          .eq('id', asistente.eventos.cliente_id)
+          .single();
+
+        if (clienteData?.email_user && clienteData?.email_pass) {
+          emailUser = clienteData.email_user;
+          emailPass = clienteData.email_pass;
+        }
+      }
+
+      if (!emailUser || !emailPass) {
+        // No enviar correo si el cliente no tiene configurado su email
+        return NextResponse.json({ success: true, warning: 'Pago aprobado pero no se envió correo: el cliente no ha configurado su correo Gmail.' });
       }
 
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: emailUser,
+          pass: emailPass,
         },
       });
 
@@ -65,7 +83,7 @@ async function aprobarPagoHandler(request: NextRequest, { params }: { params: { 
       });
 
       const mailOptions = {
-        from: `"Banquete Soft" <${process.env.EMAIL_USER}>`,
+        from: `"Eventix" <${emailUser}>`,
         to: asistente.email,
         subject: `¡Pago Aprobado! Tu boleta para ${asistente.eventos?.nombre}`,
         html: `
