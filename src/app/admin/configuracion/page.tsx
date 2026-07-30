@@ -7,6 +7,8 @@ import { apiFetch } from '@/lib/api';
 export default function ConfiguracionPage() {
   const router = useRouter();
   const [whatsapp, setWhatsapp] = useState('');
+  const [emailUser, setEmailUser] = useState('');
+  const [emailPass, setEmailPass] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
@@ -23,6 +25,8 @@ export default function ConfiguracionPage() {
         if (data.whatsapp_contacto) {
           setWhatsapp(data.whatsapp_contacto);
         }
+        if (data.email_user) setEmailUser(data.email_user);
+        if (data.email_pass) setEmailPass(data.email_pass);
       } else if (res.status === 401) {
         router.push('/login');
       }
@@ -41,7 +45,11 @@ export default function ConfiguracionPage() {
       const res = await apiFetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ whatsapp_contacto: whatsapp.trim() || null })
+        body: JSON.stringify({ 
+          whatsapp_contacto: whatsapp.trim() || null,
+          email_user: emailUser.trim() || null,
+          email_pass: emailPass.trim() || null
+        })
       });
 
       if (res.ok) {
@@ -115,6 +123,35 @@ export default function ConfiguracionPage() {
               />
               <p className="text-xs text-warm-500 mt-2">
                 Escribe solo números. Por ejemplo, para Colombia usa el 57 seguido de tu número celular.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-primary-700 mb-2">
+                Correo Gmail
+              </label>
+              <input
+                type="email"
+                className="input-field"
+                placeholder="tu.correo@gmail.com"
+                value={emailUser}
+                onChange={(e) => setEmailUser(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-primary-700 mb-2">
+                Contraseña de Aplicación
+              </label>
+              <input
+                type="password"
+                className="input-field"
+                placeholder="**** **** **** ****"
+                value={emailPass}
+                onChange={(e) => setEmailPass(e.target.value)}
+              />
+              <p className="text-xs text-warm-500 mt-2">
+                Para generar una contraseña de aplicación, ve a tu cuenta de Google &gt; Seguridad &gt; Verificación en 2 pasos &gt; Contraseñas de aplicaciones. Genera una para &quot;Correo&quot; y pégala aquí.
               </p>
             </div>
 

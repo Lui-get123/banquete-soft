@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { supabase } from '@/lib/supabase';
 import { withAuth } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
 async function postEnviarBoletas(request: NextRequest) {
   try {
+    const userId = request.headers.get('x-user-id');
     const { email, boletasBase64, customMessage } = await request.json();
 
     if (!email || !boletasBase64 || !Array.isArray(boletasBase64) || boletasBase64.length === 0) {
@@ -15,7 +17,23 @@ async function postEnviarBoletas(request: NextRequest) {
       );
     }
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    let emailUser = process.env.EMAIL_USER;
+    let emailPass = process.env.EMAIL_PASS;
+
+    if (userId) {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('email_user, email_pass')
+        .eq('id', parseInt(userId))
+        .single();
+      
+      if (!error && user && user.email_user && user.email_pass) {
+        emailUser = user.email_user;
+        emailPass = user.email_pass;
+      }
+    }
+
+    if (!emailUser || !emailPass) {
       return NextResponse.json(
         { error: 'El servidor no tiene configuradas las credenciales de correo' },
         { status: 500 }
@@ -25,8 +43,8 @@ async function postEnviarBoletas(request: NextRequest) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: emailUser,
+        pass: emailPass,
       },
     });
 
@@ -43,7 +61,7 @@ async function postEnviarBoletas(request: NextRequest) {
     });
 
     const mailOptions = {
-      from: `"Banquete Soft" <${process.env.EMAIL_USER}>`,
+      from: `"Eventix" <${emailUser}>`,
       to: email,
       subject: '¡Tus Boletas para el Evento!',
       text: customMessage || 'Adjuntamos las boletas que has generado. Por favor, preséntalas en la entrada del evento.',

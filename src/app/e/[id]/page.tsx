@@ -99,7 +99,8 @@ export default function PublicEventRegistrationPage({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email,
-            boletasBase64
+            boletasBase64,
+            evento_id: eventoId
           })
         });
 

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, boletasBase64, customMessage } = await request.json();
+    const { email, boletasBase64, customMessage, evento_id } = await request.json();
 
     if (!email || !boletasBase64 || !Array.isArray(boletasBase64) || boletasBase64.length === 0) {
       return NextResponse.json(
@@ -14,7 +15,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    let emailUser = process.env.EMAIL_USER;
+    let emailPass = process.env.EMAIL_PASS;
+
+    if (evento_id) {
+      const { data: evento, error: eventError } = await supabase
+        .from('eventos')
+        .select('cliente_id')
+        .eq('id', evento_id)
+        .single();
+
+      if (!eventError && evento && evento.cliente_id) {
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('email_user, email_pass')
+          .eq('id', evento.cliente_id)
+          .single();
+
+        if (!userError && user && user.email_user && user.email_pass) {
+          emailUser = user.email_user;
+          emailPass = user.email_pass;
+        }
+      }
+    }
+
+    if (!emailUser || !emailPass) {
       return NextResponse.json(
         { error: 'El servidor no tiene configuradas las credenciales de correo' },
         { status: 500 }
@@ -24,8 +49,8 @@ export async function POST(request: NextRequest) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: emailUser,
+        pass: emailPass,
       },
     });
 
@@ -42,7 +67,7 @@ export async function POST(request: NextRequest) {
     });
 
     const mailOptions = {
-      from: `"Eventix" <${process.env.EMAIL_USER}>`,
+      from: `"Eventix" <${emailUser}>`,
       to: email,
       subject: '¡Tus Boletas para el Evento!',
       text: customMessage || 'Adjuntamos las boletas que has generado. Por favor, preséntalas en la entrada del evento.',

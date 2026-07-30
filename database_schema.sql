@@ -12,6 +12,9 @@ CREATE TABLE users (
   password TEXT NOT NULL,
   role TEXT DEFAULT 'admin',
   status TEXT DEFAULT 'pending',
+  email_user TEXT,
+  email_pass TEXT,
+  whatsapp_contacto TEXT, -- Added implicitly because I saw it in config API
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

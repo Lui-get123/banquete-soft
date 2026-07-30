@@ -14,14 +14,16 @@ async function getConfigHandler(request: NextRequest) {
 
     const { data: user, error } = await supabase
       .from('users')
-      .select('whatsapp_contacto')
+      .select('whatsapp_contacto, email_user, email_pass')
       .eq('id', parseInt(userId))
       .single();
 
     if (error) throw error;
 
     return NextResponse.json({
-      whatsapp_contacto: user.whatsapp_contacto
+      whatsapp_contacto: user.whatsapp_contacto,
+      email_user: user.email_user,
+      email_pass: user.email_pass
     });
   } catch (error) {
     console.error('Error fetching config:', error);
@@ -38,11 +40,15 @@ async function postConfigHandler(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { whatsapp_contacto } = body;
+    const { whatsapp_contacto, email_user, email_pass } = body;
 
     const { error } = await supabase
       .from('users')
-      .update({ whatsapp_contacto: whatsapp_contacto || null })
+      .update({ 
+        whatsapp_contacto: whatsapp_contacto || null,
+        email_user: email_user || null,
+        email_pass: email_pass || null
+      })
       .eq('id', parseInt(userId));
 
     if (error) throw error;
