@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const [editandoEvento, setEditandoEvento] = useState(false);
   const [eventoEditNombre, setEventoEditNombre] = useState('');
   const [eventoEditPrecio, setEventoEditPrecio] = useState('0');
+  const [configCompleta, setConfigCompleta] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -38,8 +39,23 @@ export default function DashboardPage() {
     
     if (parsedUser.status === 'active') {
       cargarEventos();
+      verificarConfiguracion();
     }
   }, [router]);
+
+  const verificarConfiguracion = async () => {
+    try {
+      const res = await apiFetch('/api/config');
+      if (res.ok) {
+        const data = await res.json();
+        const tieneWhatsapp = !!data.whatsapp_contacto;
+        const tieneEmail = !!data.email_user && !!data.email_pass;
+        setConfigCompleta(tieneWhatsapp && tieneEmail);
+      }
+    } catch (error) {
+      console.error('Error verificando config:', error);
+    }
+  };
 
   const cargarEventos = async () => {
     try {
@@ -215,6 +231,7 @@ export default function DashboardPage() {
             baseColorClass="bg-primary-100"
             iconColorClass="text-primary-600"
             disabled={!eventoActivo}
+            needsConfig={!configCompleta}
             icon={
               <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -245,6 +262,7 @@ export default function DashboardPage() {
             baseColorClass="bg-warm-200"
             iconColorClass="text-warm-600"
             disabled={!eventoActivo}
+            needsConfig={!configCompleta}
             icon={
               <svg className="w-7 h-7 text-warm-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -373,20 +391,26 @@ export default function DashboardPage() {
 
               {eventoActivo && (
                 <div className="mt-5 pt-5 border-t border-warm-100">
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/e/${eventoActivo}`;
-                      navigator.clipboard.writeText(url);
-                      alert('¡Enlace de invitación copiado al portapapeles!');
-                    }}
-                    className="w-full flex items-center justify-center gap-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-semibold py-2.5 rounded-xl transition-colors border border-warm-200"
-                    title="Copiar Enlace de Invitación"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
-                    Copiar Enlace de Registro Público
-                  </button>
+                  {configCompleta ? (
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/e/${eventoActivo}`;
+                        navigator.clipboard.writeText(url);
+                        alert('¡Enlace de invitación copiado al portapapeles!');
+                      }}
+                      className="w-full flex items-center justify-center gap-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-semibold py-2.5 rounded-xl transition-colors border border-warm-200"
+                      title="Copiar Enlace de Invitación"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      Copiar Enlace de Registro Público
+                    </button>
+                  ) : (
+                    <div className="text-center p-3 bg-amber-50 rounded-xl border border-dashed border-amber-300">
+                      <p className="text-amber-700 text-xs font-medium">⚠️ Configura tu WhatsApp y correo Gmail para habilitar el registro público</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -413,8 +437,26 @@ const DashboardCard = ({
   delayClass,
   baseColorClass,
   iconColorClass,
-  disabled
+  disabled,
+  needsConfig
 }: any) => {
+  if (needsConfig) {
+    return (
+      <div
+        onClick={() => alert('Para usar esta función, primero ve a Configuración y registra tu número de WhatsApp y tu correo Gmail con contraseña de aplicación.')}
+        className={`card-hover p-6 cursor-pointer group ${delayClass} bg-amber-50 border-2 border-dashed border-amber-300`}
+      >
+        <div className={`flex items-center justify-center w-14 h-14 bg-amber-100 rounded-full mb-4`}>
+          <div className="text-amber-500">
+            {icon}
+          </div>
+        </div>
+        <h3 className="text-lg font-semibold text-amber-800 mb-1">{title}</h3>
+        <p className="text-amber-600 text-sm leading-relaxed">Configura WhatsApp y correo primero</p>
+      </div>
+    );
+  }
+
   if (disabled) {
     return (
       <div

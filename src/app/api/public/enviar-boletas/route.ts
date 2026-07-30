@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let emailUser = process.env.EMAIL_USER;
-    let emailPass = process.env.EMAIL_PASS;
+    let emailUser: string | null = null;
+    let emailPass: string | null = null;
 
     if (evento_id) {
       const { data: evento, error: eventError } = await supabase
@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
 
     if (!emailUser || !emailPass) {
       return NextResponse.json(
-        { error: 'El servidor no tiene configuradas las credenciales de correo' },
-        { status: 500 }
+        { error: 'El organizador de este evento aún no ha configurado su correo. Contacta al organizador.' },
+        { status: 400 }
       );
     }
 

@@ -17,8 +17,8 @@ async function postEnviarBoletas(request: NextRequest) {
       );
     }
 
-    let emailUser = process.env.EMAIL_USER;
-    let emailPass = process.env.EMAIL_PASS;
+    let emailUser: string | null = null;
+    let emailPass: string | null = null;
 
     if (userId) {
       const { data: user, error } = await supabase
@@ -35,8 +35,8 @@ async function postEnviarBoletas(request: NextRequest) {
 
     if (!emailUser || !emailPass) {
       return NextResponse.json(
-        { error: 'El servidor no tiene configuradas las credenciales de correo' },
-        { status: 500 }
+        { error: 'Debes configurar tu correo Gmail en Configuración antes de enviar boletas.' },
+        { status: 400 }
       );
     }
 
